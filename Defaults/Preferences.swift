@@ -55,6 +55,10 @@ class Preferences: BasePreferences {
     @objc private dynamic var rawColorTypeValue: Int = ColorType.blue.rawValue
     
     @objc dynamic var subInfo: SubInfo = SubInfo()
+    
+    override func migrateUserDefaults(_ userDefaults: UserDefaults) {
+        migrateValueForKeyPath(from: "oldIntValue", to: #keyPath(intValue))
+    }
 }
 
 

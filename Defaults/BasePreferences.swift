@@ -2,7 +2,6 @@
 import Foundation
 
 // Inspired by https://gist.github.com/macmade/0824d91b1f3a3b095057a40742d50a03
-// TODO: 마이그레이션 지원
 
 public protocol SubPreferences: NSObjectProtocol {}
 
@@ -17,9 +16,7 @@ open class BasePreferences: NSObject {
         precondition(type(of: self) != BasePreferences.self,
                      "This class must be subclassed before it can be used.")
         
-        for each in persistentKeyPaths {
-            print(each)
-        }
+        migrateUserDefaults(userDefaults)
         registerDefaults()
         synchronizeProperties()
         addPropertyObserver()
@@ -27,6 +24,16 @@ open class BasePreferences: NSObject {
     
     deinit {
         removePropertyObserver()
+    }
+    
+    open func migrateUserDefaults(_ userDefaults: UserDefaults) {
+        
+    }
+    
+    public func migrateValueForKeyPath(from oldKeyPath: String, to newKeyPath: String) {
+        guard let value = userDefaults.object(forKey: oldKeyPath) else { return }
+        userDefaults.removeObject(forKey: oldKeyPath)
+        userDefaults.set(value, forKey: newKeyPath)
     }
     
     private func registerDefaults() {
