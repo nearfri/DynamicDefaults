@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func sample() {
         let pref = Preferences.shared
         
-        print(pref.defaultNames)
+        print(pref.persistentKeyPaths)
         
         func printPref() {
             print(pref.intValue)
@@ -39,6 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print(pref.dateValue)
             print(pref.urlValue)
             print(pref.fileURLValue)
+            print(pref.subInfo.number)
+            print(pref.subInfo.title)
         }
         
         printPref()
@@ -54,6 +56,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         pref.dateValue = Date()
         pref.urlValue = URL(string: "http://hello.com")!
         pref.fileURLValue = URL(fileURLWithPath: "/new/url/string")
+        pref.subInfo.number = 88
+        pref.subInfo.title = "hungry"
         
         printPref()
     }

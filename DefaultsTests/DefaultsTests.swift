@@ -46,7 +46,11 @@ class DefaultsTests: XCTestCase {
         pref.fileURLValue = URL(fileURLWithPath: "/path/to/seoul")
         pref.optStringValue = "wow"
         pref.optIntValue = 8
+        pref.optStringValue = nil
+        pref.optIntValue = nil
         pref.colorTypeValue = .yellow
+        pref.subInfo.number = 12
+        pref.subInfo.title = "track"
         
         pref = Preferences()
         XCTAssertEqual(pref.intValue, 5)
@@ -60,9 +64,13 @@ class DefaultsTests: XCTestCase {
         XCTAssertEqual(pref.dateValue, Date(timeIntervalSinceReferenceDate: 30))
         XCTAssertEqual(pref.urlValue, URL(string: "http://foo.bar"))
         XCTAssertEqual(pref.fileURLValue, URL(fileURLWithPath: "/path/to/seoul"))
-        XCTAssertEqual(pref.optStringValue, "wow")
-        XCTAssertEqual(pref.optIntValue, 8)
+//        XCTAssertEqual(pref.optStringValue, "wow")
+//        XCTAssertEqual(pref.optIntValue, 8)
+        XCTAssertNil(pref.optStringValue)
+        XCTAssertNil(pref.optIntValue)
         XCTAssertEqual(pref.colorTypeValue, .yellow)
+        XCTAssertEqual(pref.subInfo.number, 12)
+        XCTAssertEqual(pref.subInfo.title, "track")
         
         removeAll()
         pref = Preferences()
@@ -85,5 +93,7 @@ class DefaultsTests: XCTestCase {
         XCTAssertNil(pref.optStringValue)
         XCTAssertNil(pref.optIntValue)
         XCTAssertEqual(pref.colorTypeValue, ColorType.blue)
+        XCTAssertEqual(pref.subInfo.number, 8)
+        XCTAssertEqual(pref.subInfo.title, "magnet")
     }
 }

@@ -10,7 +10,7 @@ enum ColorType: Int {
     case yellow
 }
 
-class SubInfo: NSObject {
+class SubInfo: NSObject, SubPreferences {
     @objc dynamic var number: Int = 8
     @objc dynamic var title: String = "magnet"
 }
@@ -54,7 +54,7 @@ class Preferences: BasePreferences {
     }
     @objc private dynamic var rawColorTypeValue: Int = ColorType.blue.rawValue
     
-//    @objc dynamic var subInfo: SubInfo = SubInfo()
+    @objc dynamic var subInfo: SubInfo = SubInfo()
 }
 
 

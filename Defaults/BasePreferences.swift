@@ -3,7 +3,8 @@ import Foundation
 
 // Inspired by https://gist.github.com/macmade/0824d91b1f3a3b095057a40742d50a03
 // TODO: 마이그레이션 지원
-// TODO: 커스텀 타입과 keyPath 지원??
+
+public protocol SubPreferences: NSObjectProtocol {}
 
 open class BasePreferences: NSObject {
     private let userDefaults: UserDefaults
@@ -16,6 +17,9 @@ open class BasePreferences: NSObject {
         precondition(type(of: self) != BasePreferences.self,
                      "This class must be subclassed before it can be used.")
         
+        for each in persistentKeyPaths {
+            print(each)
+        }
         registerDefaults()
         synchronizeProperties()
         addPropertyObserver()
@@ -26,32 +30,45 @@ open class BasePreferences: NSObject {
     }
     
     private func registerDefaults() {
-        let defaults: [(String, Any)] = defaultNames.reduce(into: []) { (ret, key) in
-            value(forKey: key).map({ ret.append((key, $0)) })
+        let defaults: [(String, Any)] = persistentKeyPaths.reduce(into: []) { (ret, keyPath) in
+            value(forKeyPath: keyPath).map({ ret.append((keyPath, $0)) })
         }
         userDefaults.register(defaults: Dictionary(uniqueKeysWithValues: defaults))
     }
     
     private func synchronizeProperties() {
-        for key in defaultNames {
-            setValue(userDefaults.object(forKey: key), forKey: key)
+        for keyPath in persistentKeyPaths {
+            setValue(userDefaults.object(forKey: keyPath), forKeyPath: keyPath)
         }
     }
     
     private func addPropertyObserver() {
-        for key in defaultNames {
-            addObserver(self, forKeyPath: key, options: [.new], context: &KVO.context)
+        for keyPath in persistentKeyPaths {
+            addObserver(self, forKeyPath: keyPath, options: [.new], context: &KVO.context)
         }
     }
     
     private func removePropertyObserver() {
-        for key in defaultNames {
-            removeObserver(self, forKeyPath: key, context: &KVO.context)
+        for keyPath in persistentKeyPaths {
+            removeObserver(self, forKeyPath: keyPath, context: &KVO.context)
         }
     }
     
-    open var defaultNames: [String] {
-        return Mirror(reflecting: self).children.flatMap({ $0.label })
+    open var persistentKeyPaths: [String] {
+        return propertyKeyPaths(of: self)
+    }
+    
+    private func propertyKeyPaths(of subject: Any) -> [String] {
+        var result: [String] = []
+        for case let (label?, value) in Mirror(reflecting: subject).children {
+            if value is SubPreferences {
+                let subKeyPaths = propertyKeyPaths(of: value)
+                result.append(contentsOf: subKeyPaths.map({ "\(label).\($0)" }))
+            } else {
+                result.append(label)
+            }
+        }
+        return result
     }
     
     open override func observeValue(
@@ -59,11 +76,11 @@ open class BasePreferences: NSObject {
         context: UnsafeMutableRawPointer?) {
         
         if context == &KVO.context {
-            if let key = keyPath, let change = change {
+            if let keyPath = keyPath, let change = change {
                 if let newValue = change[NSKeyValueChangeKey.newKey], !(newValue is NSNull) {
-                    userDefaults.set(newValue, forKey: key)
+                    userDefaults.set(newValue, forKey: keyPath)
                 } else {
-                    userDefaults.removeObject(forKey: key)
+                    userDefaults.removeObject(forKey: keyPath)
                 }
             }
         } else {
