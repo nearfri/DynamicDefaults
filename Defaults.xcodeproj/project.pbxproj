@@ -13,6 +13,8 @@
 		7521BA7720479208002920FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7521BA7620479208002920FD /* Assets.xcassets */; };
 		7521BA7A20479208002920FD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7521BA7820479208002920FD /* LaunchScreen.storyboard */; };
 		7521BA8520479208002920FD /* DefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8420479208002920FD /* DefaultsTests.swift */; };
+		7521BA912047921A002920FD /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8F2047921A002920FD /* Preferences.swift */; };
+		7521BA922047921A002920FD /* BasePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA902047921A002920FD /* BasePreferences.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +38,8 @@
 		7521BA8020479208002920FD /* DefaultsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DefaultsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7521BA8420479208002920FD /* DefaultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsTests.swift; sourceTree = "<group>"; };
 		7521BA8620479208002920FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7521BA8F2047921A002920FD /* Preferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
+		7521BA902047921A002920FD /* BasePreferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasePreferences.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +83,8 @@
 			children = (
 				7521BA6F20479207002920FD /* AppDelegate.swift */,
 				7521BA7120479208002920FD /* ViewController.swift */,
+				7521BA902047921A002920FD /* BasePreferences.swift */,
+				7521BA8F2047921A002920FD /* Preferences.swift */,
 				7521BA7320479208002920FD /* Main.storyboard */,
 				7521BA7620479208002920FD /* Assets.xcassets */,
 				7521BA7820479208002920FD /* LaunchScreen.storyboard */,
@@ -200,7 +206,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7521BA7220479208002920FD /* ViewController.swift in Sources */,
+				7521BA922047921A002920FD /* BasePreferences.swift in Sources */,
 				7521BA7020479207002920FD /* AppDelegate.swift in Sources */,
+				7521BA912047921A002920FD /* Preferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

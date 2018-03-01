@@ -16,7 +16,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        print(NSTemporaryDirectory())
+        sample()
+        
         return true
+    }
+    
+    func sample() {
+        let pref = Preferences.shared
+        
+        print(pref.defaultNames)
+        
+        func printPref() {
+            print(pref.intValue)
+            print(pref.doubleValue)
+            print(pref.floatValue)
+            print(pref.boolValue)
+            print(pref.stringValue)
+            print(pref.intArrayValue)
+            print(pref.stringArrayValue)
+            print(pref.dataValue)
+            print(pref.dateValue)
+            print(pref.urlValue)
+            print(pref.fileURLValue)
+        }
+        
+        printPref()
+        
+        pref.intValue = 1
+        pref.doubleValue = 2
+        pref.floatValue = 3
+        pref.boolValue = false
+        pref.stringValue = "world"
+        pref.intArrayValue = [10, 11, 12]
+        pref.stringArrayValue = ["swift", "work"]
+        pref.dataValue = Data(count: 20)
+        pref.dateValue = Date()
+        pref.urlValue = URL(string: "http://hello.com")!
+        pref.fileURLValue = URL(fileURLWithPath: "/new/url/string")
+        
+        printPref()
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
