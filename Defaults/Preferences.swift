@@ -1,6 +1,20 @@
 
 import Foundation
 
+enum ColorType: Int {
+    case red
+    case blue
+    case green
+    case black
+    case white
+    case yellow
+}
+
+class SubInfo: NSObject {
+    @objc dynamic var number: Int = 8
+    @objc dynamic var title: String = "magnet"
+}
+
 class Preferences: BasePreferences {
     static let shared: Preferences = Preferences()
     
@@ -12,19 +26,35 @@ class Preferences: BasePreferences {
     @objc dynamic var intArrayValue: [Int] = [1, 2, 3, 4, 5]
     @objc dynamic var stringArrayValue: [String] = ["hello", "world"]
     @objc dynamic var dataValue: Data = Data(count: 10)
-    @objc dynamic var dateValue: Date = Date()
+    @objc dynamic var dateValue: Date = Date(timeIntervalSinceReferenceDate: 20)
     
-    @objc private dynamic var urlString: String = "http://google.com"
     var urlValue: URL {
-        get { return URL(string: urlString)! }
-        set { urlString = newValue.absoluteString }
+        get { return URL(string: rawURLValue)! }
+        set { rawURLValue = newValue.absoluteString }
     }
+    @objc private dynamic var rawURLValue: String = "http://google.com"
     
-    @objc private dynamic var fileURLString: String = "/path/to/file"
     var fileURLValue: URL {
-        get { return URL(fileURLWithPath: fileURLString) }
-        set { fileURLString = newValue.path }
+        get { return URL(fileURLWithPath: rawFileURLValue) }
+        set { rawFileURLValue = newValue.path }
     }
+    @objc private dynamic var rawFileURLValue: String = "/path/to/file"
+    
+    @objc dynamic var optStringValue: String? = nil
+    
+    var optIntValue: Int? {
+        get { return rawOptIntValue?.intValue }
+        set { rawOptIntValue = newValue.map({ NSNumber(value: $0) }) }
+    }
+    @objc private dynamic var rawOptIntValue: NSNumber? = nil
+    
+    var colorTypeValue: ColorType {
+        get { return ColorType(rawValue: rawColorTypeValue)! }
+        set { rawColorTypeValue = newValue.rawValue }
+    }
+    @objc private dynamic var rawColorTypeValue: Int = ColorType.blue.rawValue
+    
+//    @objc dynamic var subInfo: SubInfo = SubInfo()
 }
 
 

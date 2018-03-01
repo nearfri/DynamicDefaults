@@ -13,6 +13,9 @@ open class BasePreferences: NSObject {
         
         super.init()
         
+        precondition(type(of: self) != BasePreferences.self,
+                     "This class must be subclassed before it can be used.")
+        
         registerDefaults()
         synchronizeProperties()
         addPropertyObserver()
@@ -48,9 +51,7 @@ open class BasePreferences: NSObject {
     }
     
     open var defaultNames: [String] {
-        let names = Set(Mirror(reflecting: self).children.flatMap({ $0.label }))
-        let filteredNames = names.subtracting(["userDefaults"])
-        return Array(filteredNames)
+        return Mirror(reflecting: self).children.flatMap({ $0.label })
     }
     
     open override func observeValue(
@@ -59,7 +60,11 @@ open class BasePreferences: NSObject {
         
         if context == &KVO.context {
             if let key = keyPath, let change = change {
-                userDefaults.set(change[NSKeyValueChangeKey.newKey], forKey: key)
+                if let newValue = change[NSKeyValueChangeKey.newKey], !(newValue is NSNull) {
+                    userDefaults.set(newValue, forKey: key)
+                } else {
+                    userDefaults.removeObject(forKey: key)
+                }
             }
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
