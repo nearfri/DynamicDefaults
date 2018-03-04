@@ -8,16 +8,50 @@
 
 import UIKit
 
+class MyView: UIView {
+    deinit {
+        print("deinit view")
+    }
+}
+
+extension KVOItem {
+    func append(to array: inout [KVOItem]) {
+        array.append(self)
+    }
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+    var view: UIView!
     var window: UIWindow?
+    var kvoItems: [KVOItem] = []
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         print(NSTemporaryDirectory())
-        sample()
+        view = MyView()
+        
+        kvoItems += [
+            view.observe(keyPath: #keyPath(UIView.frame)) { (view, change: KVOChange<CGRect>) in
+                guard let newFrame: CGRect = change.newValue else { return }
+                print(newFrame)
+            },
+            view.observe(keyPath: #keyPath(UIView.frame)) { (view, change) in
+                guard let newFrame: CGRect = change.newValue as? CGRect else { return }
+                print(newFrame)
+            }
+        ]
+        
+        view.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+//        view = nil
+        view.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+        kvoItems.removeAll()
+//        view.hello()
+        view.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
+        view = nil
+        
+//        sample()
         
         return true
     }
@@ -56,6 +90,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         pref.dateValue = Date()
         pref.urlValue = URL(string: "http://hello.com")!
         pref.fileURLValue = URL(fileURLWithPath: "/new/url/string")
+        pref.optStringValue = "wow"
+        pref.optIntValue = 8
+        pref.optStringValue = nil
+        pref.optIntValue = nil
+        pref.colorTypeValue = .yellow
         pref.subInfo.number = 88
         pref.subInfo.title = "hungry"
         
