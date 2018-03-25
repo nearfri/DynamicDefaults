@@ -120,7 +120,7 @@ extension PlistObjectEncoder {
         private let completion: (_ value: Any) -> Void
         
         init(referencing encoder: PlistObjectEncoder, at index: Int,
-             completion: @escaping (_ value: Any) -> Void) {
+             completion: @escaping (_ value: Any) -> Void = { _ in }) {
             
             self.referenceCodingPath = encoder.codingPath
             self.completion = completion
@@ -129,7 +129,7 @@ extension PlistObjectEncoder {
         }
         
         init(referencing encoder: PlistObjectEncoder, at key: CodingKey,
-             completion: @escaping (_ value: Any) -> Void) {
+             completion: @escaping (_ value: Any) -> Void = { _ in }) {
             
             self.referenceCodingPath = encoder.codingPath
             self.completion = completion
@@ -193,9 +193,8 @@ extension PlistObjectEncoder {
         func encodeNil(forKey key: Key) throws { container[key.stringValue] = Constant.nullValue }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            encoder.codingPath.append(key)
-            defer { encoder.codingPath.removeLast() }
-            container[key.stringValue] = try encoder.box(value)
+            let valueEncoder = ReferencingEncoder(referencing: encoder, at: key)
+            container[key.stringValue] = try valueEncoder.box(value)
         }
         
         func nestedContainer<NestedKey: CodingKey>(
@@ -271,9 +270,8 @@ extension PlistObjectEncoder {
         func encodeNil() throws { container.append(Constant.nullValue) }
         
         func encode<T: Encodable>(_ value: T) throws {
-            encoder.codingPath.append(PlistObjectKey(index: count))
-            defer { encoder.codingPath.removeLast() }
-            container.append(try encoder.box(value))
+            let valueEncoder = ReferencingEncoder(referencing: encoder, at: count)
+            container.append(try valueEncoder.box(value))
         }
         
         func nestedContainer<NestedKey: CodingKey>(
