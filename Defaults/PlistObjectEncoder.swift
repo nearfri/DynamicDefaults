@@ -8,7 +8,7 @@ public class PlistObjectEncoder: Encoder {
     public var userInfo: [CodingUserInfoKey: Any] = [:]
     private var storage: Storage = Storage()
     
-    public init(codingPath: [CodingKey] = []) {
+    private init(codingPath: [CodingKey]) {
         self.codingPath = codingPath
     }
     
@@ -53,6 +53,37 @@ public class PlistObjectEncoder: Encoder {
 }
 
 extension PlistObjectEncoder {
+    public convenience init() {
+        self.init(codingPath: [])
+    }
+    
+    public func encode<T: Encodable>(_ value: T) throws -> Any {
+        return try box(value)
+    }
+    
+    private func box<T: Encodable>(_ value: T) throws -> Any {
+        if T.self == Data.self || T.self == Date.self || T.self == URL.self {
+            return value
+        }
+        
+        let depth = storage.count
+        do {
+            try value.encode(to: self)
+        } catch {
+            if storage.count > depth {
+                _ = storage.popContainer()
+            }
+            throw error
+        }
+        
+        guard storage.count > depth else {
+            return [:] as [String: Any]
+        }
+        return storage.popContainer()
+    }
+}
+
+extension PlistObjectEncoder {
     private class Storage {
         private(set) var containers: [Any] = []
         
@@ -80,33 +111,6 @@ extension PlistObjectEncoder {
             
             containers[index] = container
         }
-    }
-}
-
-extension PlistObjectEncoder {
-    func foo<T: Encodable>(_ value: T) throws -> Any {
-        return try box(value)
-    }
-    
-    private func box<T: Encodable>(_ value: T) throws -> Any {
-        if T.self == Data.self || T.self == Date.self || T.self == URL.self {
-            return value
-        }
-        
-        let depth = storage.count
-        do {
-            try value.encode(to: self)
-        } catch {
-            if storage.count > depth {
-                _ = storage.popContainer()
-            }
-            throw error
-        }
-        
-        guard storage.count > depth else {
-            return [:] as [String: Any]
-        }
-        return storage.popContainer()
     }
 }
 

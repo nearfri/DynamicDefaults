@@ -112,7 +112,7 @@ class EncoderTests: XCTestCase {
         dog.age = 5
         dog.friends = ["mike", "suzan"]
         
-        let ret = try! encoder.foo(dog) as! [String: Any]
+        let ret = try! encoder.encode(dog) as! [String: Any]
         print(ret)
     }
 }
