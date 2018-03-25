@@ -56,7 +56,7 @@ public class KVOItem: NSObject {
     }
 }
 
-public protocol KeyValueObserving: NSObjectProtocol {}
+public protocol KeyValueObserving {}
 
 extension KeyValueObserving {
     public func observe<Value>(

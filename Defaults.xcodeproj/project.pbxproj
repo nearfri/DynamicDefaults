@@ -16,6 +16,10 @@
 		7521BA912047921A002920FD /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8F2047921A002920FD /* Preferences.swift */; };
 		7521BA922047921A002920FD /* BasePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA902047921A002920FD /* BasePreferences.swift */; };
 		756EBD83204A6EA200C73FF5 /* NSObject+KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */; };
+		756EBD85205CB09000C73FF5 /* PlistObjectEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD84205CB09000C73FF5 /* PlistObjectEncoder.swift */; };
+		756EBD87205CE6F700C73FF5 /* PlistObjectKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */; };
+		756EBD892066944100C73FF5 /* EncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD882066944100C73FF5 /* EncoderTests.swift */; };
+		756EBD8B2066945B00C73FF5 /* PlistEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +46,10 @@
 		7521BA8F2047921A002920FD /* Preferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		7521BA902047921A002920FD /* BasePreferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasePreferences.swift; sourceTree = "<group>"; };
 		756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+KVO.swift"; sourceTree = "<group>"; };
+		756EBD84205CB09000C73FF5 /* PlistObjectEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistObjectEncoder.swift; sourceTree = "<group>"; };
+		756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistObjectKey.swift; sourceTree = "<group>"; };
+		756EBD882066944100C73FF5 /* EncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderTests.swift; sourceTree = "<group>"; };
+		756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlistEncoder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,8 +94,11 @@
 				7521BA6F20479207002920FD /* AppDelegate.swift */,
 				7521BA7120479208002920FD /* ViewController.swift */,
 				756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */,
+				756EBD84205CB09000C73FF5 /* PlistObjectEncoder.swift */,
+				756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */,
 				7521BA902047921A002920FD /* BasePreferences.swift */,
 				7521BA8F2047921A002920FD /* Preferences.swift */,
+				756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */,
 				7521BA7320479208002920FD /* Main.storyboard */,
 				7521BA7620479208002920FD /* Assets.xcassets */,
 				7521BA7820479208002920FD /* LaunchScreen.storyboard */,
@@ -100,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				7521BA8420479208002920FD /* DefaultsTests.swift */,
+				756EBD882066944100C73FF5 /* EncoderTests.swift */,
 				7521BA8620479208002920FD /* Info.plist */,
 			);
 			path = DefaultsTests;
@@ -209,9 +221,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				756EBD83204A6EA200C73FF5 /* NSObject+KVO.swift in Sources */,
+				756EBD8B2066945B00C73FF5 /* PlistEncoder.swift in Sources */,
 				7521BA7220479208002920FD /* ViewController.swift in Sources */,
+				756EBD87205CE6F700C73FF5 /* PlistObjectKey.swift in Sources */,
 				7521BA922047921A002920FD /* BasePreferences.swift in Sources */,
 				7521BA7020479207002920FD /* AppDelegate.swift in Sources */,
+				756EBD85205CB09000C73FF5 /* PlistObjectEncoder.swift in Sources */,
 				7521BA912047921A002920FD /* Preferences.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -220,6 +235,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				756EBD892066944100C73FF5 /* EncoderTests.swift in Sources */,
 				7521BA8520479208002920FD /* DefaultsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

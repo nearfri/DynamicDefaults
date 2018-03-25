@@ -14,21 +14,33 @@ class MyView: UIView {
     }
 }
 
-extension KVOItem {
-    func append(to array: inout [KVOItem]) {
-        array.append(self)
-    }
+class Hello: NSObject {
+    @objc var arr: [Int] = [1, 2, 3]
 }
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    var view: UIView!
+    var view: MyView!
     var window: UIWindow?
     var kvoItems: [KVOItem] = []
-
+    var item: DispatchWorkItem?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let workItem = DispatchWorkItem {
+            print("execute work item")
+        }
+        workItem.notify(queue: DispatchQueue.main) {
+            print("notify work item")
+        }
+//        workItem.cancel()
+//        self.item = workItem
+        DispatchQueue.main.async(execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
+//        DispatchQueue.main.async(execute: workItem)
+        
         print(NSTemporaryDirectory())
         view = MyView()
         
@@ -42,6 +54,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 print(newFrame)
             }
         ]
+        
+        let hello = Hello()
+        kvoItems.append(hello.observe(keyPath: "arr") { (hello, change: KVOChange<[Int]>) in
+            print(change)
+        })
+        let arr = hello.mutableArrayValue(forKey: "arr")
+        arr.add(4)
+        arr.removeObject(at: 1)
         
         view.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
 //        view = nil
