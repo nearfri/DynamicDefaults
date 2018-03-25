@@ -13,10 +13,12 @@ public class PlistObjectEncoder: Encoder {
     }
     
     public func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-        if canEncodeNewValue {
-            storage.pushContainer([:] as [String: Any])
-        }
+        precondition(canEncodeNewValue, """
+            Attempt to push new keyed encoding container \
+            when already previously encoded at this path.
+            """)
         
+        storage.pushContainer([:] as [String: Any])
         let index = storage.count - 1
         
         let keyedContainer = KeyedContainer<Key>(
@@ -27,10 +29,12 @@ public class PlistObjectEncoder: Encoder {
     }
     
     public func unkeyedContainer() -> UnkeyedEncodingContainer {
-        if canEncodeNewValue {
-            storage.pushContainer([] as [Any])
-        }
+        precondition(canEncodeNewValue, """
+            Attempt to push new unkeyed encoding container \
+            when already previously encoded at this path.
+            """)
         
+        storage.pushContainer([] as [Any])
         let index = storage.count - 1
         
         return UnkeyedContanier(
@@ -135,7 +139,8 @@ extension PlistObjectEncoder {
             case 0: value = [:] as [String: Any]
             case 1: value = storage.popContainer()
             default:
-                fatalError("Referencing encoder deallocated with multiple containers on stack.")
+                preconditionFailure(
+                    "Referencing encoder deallocated with multiple containers on stack.")
             }
             
             completion(value)
@@ -183,7 +188,7 @@ extension PlistObjectEncoder {
         func encode(_ value: String, forKey key: Key) throws { container[key.stringValue] = value }
         func encodeNil(forKey key: Key) throws { container[key.stringValue] = Constant.nullValue }
         
-        func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
+        func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.codingPath.append(key)
             defer { encoder.codingPath.removeLast() }
             container[key.stringValue] = try encoder.box(value)
@@ -261,7 +266,7 @@ extension PlistObjectEncoder {
         func encode(_ value: String) throws { container.append(value) }
         func encodeNil() throws { container.append(Constant.nullValue) }
         
-        func encode<T>(_ value: T) throws where T : Encodable {
+        func encode<T: Encodable>(_ value: T) throws {
             encoder.codingPath.append(PlistObjectKey(index: count))
             defer { encoder.codingPath.removeLast() }
             container.append(try encoder.box(value))
@@ -395,7 +400,7 @@ extension PlistObjectEncoder {
             encoder.storage.pushContainer(Constant.nullValue)
         }
         
-        func encode<T>(_ value: T) throws where T : Encodable {
+        func encode<T: Encodable>(_ value: T) throws {
             assertCanEncodeNewValue()
             encoder.storage.pushContainer(try encoder.box(value))
         }

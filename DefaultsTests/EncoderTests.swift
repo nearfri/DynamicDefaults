@@ -36,15 +36,19 @@ extension MyRect {
 class Animal: Codable {
     var name: String = ""
     var legCount: Int = 2
+    var friends: [String] = []
+    var fileURL: URL = URL(fileURLWithPath: "/path/to/file")
 }
 
 class Dog: Animal {
     var frame: MyRect = MyRect(x: 0, y: 0, width: 10, height: 10)
     var age: Int = 0
+    var stringURL: Int? = nil//URL(string: "http://google.com")
     
     enum CodingKeys : CodingKey {
         case frame
         case age
+        case stringURL
     }
     
     override init() {
@@ -55,6 +59,11 @@ class Dog: Animal {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(frame, forKey: .frame)
         try container.encode(age, forKey: .age)
+        if let url = stringURL {
+            try container.encode(url, forKey: .stringURL)
+        } else {
+            try container.encodeNil(forKey: .stringURL)
+        }
         try super.encode(to: container.superEncoder())
     }
     
@@ -79,7 +88,7 @@ class EncoderTests: XCTestCase {
         super.tearDown()
     }
     
-    func _testExample() {
+    func testExample() {
         let encoder = PropertyListEncoder2()
         
         let dog = Dog()
@@ -87,6 +96,7 @@ class EncoderTests: XCTestCase {
         dog.legCount = 4
         dog.frame = MyRect(x: 10, y: 20, width: 30, height: 40)
         dog.age = 5
+        dog.friends = ["mike", "suzan"]
         
         let ret = try! encoder.encodeToTopLevelContainer(dog) as! [String: Any]
         print(ret)
@@ -100,6 +110,7 @@ class EncoderTests: XCTestCase {
         dog.legCount = 4
         dog.frame = MyRect(x: 10, y: 20, width: 30, height: 40)
         dog.age = 5
+        dog.friends = ["mike", "suzan"]
         
         let ret = try! encoder.foo(dog) as! [String: Any]
         print(ret)
