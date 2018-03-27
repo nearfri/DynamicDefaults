@@ -21,7 +21,7 @@ public class PlistObjectEncoder: Encoder {
         storage.pushContainer([:] as [String: Any])
         let index = storage.count - 1
         
-        let keyedContainer = KeyedContainer<Key>(
+        let keyedContainer = PlistKeyedEncodingContainer<Key>(
             referencing: self,
             codingPath: codingPath,
             completion: { self.storage.replaceContainer(at: index, with: $0) })
@@ -37,14 +37,14 @@ public class PlistObjectEncoder: Encoder {
         storage.pushContainer([] as [Any])
         let index = storage.count - 1
         
-        return UnkeyedContanier(
+        return PlistUnkeyedEncodingContanier(
             referencing: self,
             codingPath: codingPath,
             completion: { self.storage.replaceContainer(at: index, with: $0) })
     }
     
     public func singleValueContainer() -> SingleValueEncodingContainer {
-        return SingleValueContanier(referencing: self, codingPath: codingPath)
+        return PlistSingleValueEncodingContanier(referencing: self, codingPath: codingPath)
     }
     
     private var canEncodeNewValue: Bool {
@@ -157,7 +157,7 @@ extension PlistObjectEncoder {
 }
 
 extension PlistObjectEncoder {
-    private class KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+    private class PlistKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         private let encoder: PlistObjectEncoder
         private let completion: (_ container: [String: Any]) -> Void
         private var container: [String: Any] = [:]
@@ -202,7 +202,7 @@ extension PlistObjectEncoder {
             keyedBy keyType: NestedKey.Type,
             forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
             
-            let keyedContainer = KeyedContainer<NestedKey>(
+            let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 completion: { self.container[key.stringValue] = $0 })
@@ -210,7 +210,7 @@ extension PlistObjectEncoder {
         }
         
         func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            return UnkeyedContanier(
+            return PlistUnkeyedEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 completion: { self.container[key.stringValue] = $0 })
@@ -232,7 +232,7 @@ extension PlistObjectEncoder {
 }
 
 extension PlistObjectEncoder {
-    private class UnkeyedContanier: UnkeyedEncodingContainer {
+    private class PlistUnkeyedEncodingContanier: UnkeyedEncodingContainer {
         private let encoder: PlistObjectEncoder
         private let completion: (_ container: [Any]) -> Void
         private var container: [Any] = []
@@ -283,7 +283,7 @@ extension PlistObjectEncoder {
             let placeholder = "placeholder for nestedContainer at \(index)"
             container.append(placeholder)
             
-            let keyedContainer = KeyedContainer<NestedKey>(
+            let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
                 completion: { self.container[index] = $0 })
@@ -295,7 +295,7 @@ extension PlistObjectEncoder {
             let placeholder = "placeholder for nestedUnkeyedContainer at \(index)"
             container.append(placeholder)
             
-            return UnkeyedContanier(
+            return PlistUnkeyedEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
                 completion: { self.container[index] = $0 })
@@ -312,7 +312,7 @@ extension PlistObjectEncoder {
         }
     }
     
-    private class SingleValueContanier: SingleValueEncodingContainer {
+    private class PlistSingleValueEncodingContanier: SingleValueEncodingContainer {
         private let encoder: PlistObjectEncoder
         
         let codingPath: [CodingKey]
