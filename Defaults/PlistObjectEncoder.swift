@@ -87,40 +87,21 @@ private protocol PlistObjectContainer {
 }
 
 extension PlistObjectEncoder {
-    private class AnyContainer: PlistObjectContainer {
-        var object: Any
-        
-        init(object: Any) {
-            self.object = object
-        }
+    private class DictionaryContainer: PlistObjectContainer {
+        var dictionary: [String: Any] = [:]
+        var object: Any { return dictionary }
     }
     
     private class ArrayContainer: PlistObjectContainer {
         var array: [Any] = []
         var object: Any { return array }
-        private let completion: (_ array: [Any]) -> Void
-        
-        init(completion: @escaping (_ array: [Any]) -> Void = { _ in }) {
-            self.completion = completion
-        }
-        
-        deinit {
-            completion(array)
-        }
     }
     
-    private class DictionaryContainer: PlistObjectContainer {
-        var dictionary: [String: Any] = [:]
-        var object: Any { return dictionary }
+    private class AnyContainer: PlistObjectContainer {
+        var object: Any
         
-        private let completion: (_ dictionary: [String: Any]) -> Void
-        
-        init(completion: @escaping (_ dictionary: [String: Any]) -> Void = { _ in }) {
-            self.completion = completion
-        }
-        
-        deinit {
-            completion(dictionary)
+        init(object: Any) {
+            self.object = object
         }
     }
     
@@ -275,7 +256,7 @@ extension PlistObjectEncoder {
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 container: DictionaryContainer(),
-                completion: { self.container.dictionary[key.stringValue] = $0 })
+                completion: { [container] in container.dictionary[key.stringValue] = $0 })
             return KeyedEncodingContainer(keyedContainer)
         }
         
@@ -284,20 +265,20 @@ extension PlistObjectEncoder {
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 container: ArrayContainer(),
-                completion: { self.container.dictionary[key.stringValue] = $0 })
+                completion: { [container] in container.dictionary[key.stringValue] = $0 })
         }
         
         func superEncoder() -> Encoder {
             let key = PlistObjectKey.superKey
             return ReferencingEncoder(
                 referencing: encoder, at: key,
-                completion: { self.container.dictionary[key.stringValue] = $0 })
+                completion: { [container] in container.dictionary[key.stringValue] = $0 })
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
             return ReferencingEncoder(
                 referencing: encoder, at: key,
-                completion: { self.container.dictionary[key.stringValue] = $0 })
+                completion: { [container] in container.dictionary[key.stringValue] = $0 })
         }
     }
 }
@@ -353,27 +334,25 @@ extension PlistObjectEncoder {
             keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
             
             let index = count
-            let nestedContainer = DictionaryContainer()
-            container.array.append(nestedContainer.dictionary)
+            container.array.append([:] as [String: Any])
             
             let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
-                container: nestedContainer,
-                completion: { self.container.array[index] = $0 })
+                container: DictionaryContainer(),
+                completion: { [container] in container.array[index] = $0 })
             return KeyedEncodingContainer(keyedContainer)
         }
         
         func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
             let index = count
-            let nestedContainer = ArrayContainer()
-            container.array.append(nestedContainer.array)
+            container.array.append([] as [Any])
             
             return PlistUnkeyedEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
-                container: nestedContainer,
-                completion: { self.container.array[index] = $0 })
+                container: ArrayContainer(),
+                completion: { [container] in container.array[index] = $0 })
         }
         
         func superEncoder() -> Encoder {
@@ -382,7 +361,7 @@ extension PlistObjectEncoder {
             
             return ReferencingEncoder(
                 referencing: encoder, at: index,
-                completion: { self.container.array[index] = $0 })
+                completion: { [container] in container.array[index] = $0 })
         }
     }
     
