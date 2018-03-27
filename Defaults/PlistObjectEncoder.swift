@@ -193,8 +193,9 @@ extension PlistObjectEncoder {
         func encodeNil(forKey key: Key) throws { container[key.stringValue] = Constant.nullValue }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            let valueEncoder = ReferencingEncoder(referencing: encoder, at: key)
-            container[key.stringValue] = try valueEncoder.box(value)
+            encoder.codingPath.append(key)
+            defer { encoder.codingPath.removeLast() }
+            container[key.stringValue] = try encoder.box(value)
         }
         
         func nestedContainer<NestedKey: CodingKey>(
@@ -270,8 +271,9 @@ extension PlistObjectEncoder {
         func encodeNil() throws { container.append(Constant.nullValue) }
         
         func encode<T: Encodable>(_ value: T) throws {
-            let valueEncoder = ReferencingEncoder(referencing: encoder, at: count)
-            container.append(try valueEncoder.box(value))
+            encoder.codingPath.append(PlistObjectKey(index: count))
+            defer { encoder.codingPath.removeLast() }
+            container.append(try encoder.box(value))
         }
         
         func nestedContainer<NestedKey: CodingKey>(
