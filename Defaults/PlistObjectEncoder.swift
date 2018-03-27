@@ -13,34 +13,33 @@ public class PlistObjectEncoder: Encoder {
     }
     
     public func container<Key: CodingKey>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> {
-        precondition(canEncodeNewValue, """
-            Attempt to push new keyed encoding container \
-            when already previously encoded at this path.
-            """)
+        if canEncodeNewValue {
+            storage.pushContainer(DictionaryContainer())
+        }
         
-        storage.pushContainer([:] as [String: Any])
-        let index = storage.count - 1
+        guard let topContainer = storage.topContainer as? DictionaryContainer else {
+            preconditionFailure("Attempt to push new keyed encoding container "
+                + "when already previously encoded at this path.")
+        }
         
         let keyedContainer = PlistKeyedEncodingContainer<Key>(
-            referencing: self,
-            codingPath: codingPath,
-            completion: { self.storage.replaceContainer(at: index, with: $0) })
+            referencing: self, codingPath: codingPath, container: topContainer)
+        
         return KeyedEncodingContainer(keyedContainer)
     }
     
     public func unkeyedContainer() -> UnkeyedEncodingContainer {
-        precondition(canEncodeNewValue, """
-            Attempt to push new unkeyed encoding container \
-            when already previously encoded at this path.
-            """)
+        if canEncodeNewValue {
+            storage.pushContainer(ArrayContainer())
+        }
         
-        storage.pushContainer([] as [Any])
-        let index = storage.count - 1
+        guard let topContainer = storage.topContainer as? ArrayContainer else {
+            preconditionFailure("Attempt to push new unkeyed encoding container "
+                + "when already previously encoded at this path.")
+        }
         
         return PlistUnkeyedEncodingContanier(
-            referencing: self,
-            codingPath: codingPath,
-            completion: { self.storage.replaceContainer(at: index, with: $0) })
+            referencing: self, codingPath: codingPath, container: topContainer)
     }
     
     public func singleValueContainer() -> SingleValueEncodingContainer {
@@ -79,37 +78,75 @@ extension PlistObjectEncoder {
         guard storage.count > depth else {
             return [:] as [String: Any]
         }
-        return storage.popContainer()
+        return storage.popContainer().object
     }
 }
 
+private protocol PlistObjectContainer {
+    var object: Any { get }
+}
+
 extension PlistObjectEncoder {
+    private class AnyContainer: PlistObjectContainer {
+        var object: Any
+        
+        init(object: Any) {
+            self.object = object
+        }
+    }
+    
+    private class ArrayContainer: PlistObjectContainer {
+        var array: [Any] = []
+        var object: Any { return array }
+        private let completion: (_ array: [Any]) -> Void
+        
+        init(completion: @escaping (_ array: [Any]) -> Void = { _ in }) {
+            self.completion = completion
+        }
+        
+        deinit {
+            completion(array)
+        }
+    }
+    
+    private class DictionaryContainer: PlistObjectContainer {
+        var dictionary: [String: Any] = [:]
+        var object: Any { return dictionary }
+        
+        private let completion: (_ dictionary: [String: Any]) -> Void
+        
+        init(completion: @escaping (_ dictionary: [String: Any]) -> Void = { _ in }) {
+            self.completion = completion
+        }
+        
+        deinit {
+            completion(dictionary)
+        }
+    }
+    
     private class Storage {
-        private(set) var containers: [Any] = []
+        private(set) var containers: [PlistObjectContainer] = []
         
         var count: Int {
             return containers.count
         }
         
-        func pushContainer(_ container: Any) {
-            containers.append(container)
-        }
-        
-        func popContainer() -> Any {
-            guard let result = containers.popLast() else {
+        var topContainer: PlistObjectContainer {
+            guard let result = containers.last else {
                 preconditionFailure("Empty container stack.")
             }
             return result
         }
         
-        func replaceContainer(at index: Int, with container: Any) {
-            precondition(index < count, "Invalid container index.")
-            let oldType = type(of: containers[index])
-            let newType = type(of: container)
-            precondition(oldType == newType,
-                         "Attempt to replace container \(oldType) with \(newType)")
-            
-            containers[index] = container
+        func pushContainer(_ container: PlistObjectContainer) {
+            containers.append(container)
+        }
+        
+        func popContainer() -> PlistObjectContainer {
+            guard let result = containers.popLast() else {
+                preconditionFailure("Empty container stack.")
+            }
+            return result
         }
     }
 }
@@ -117,10 +154,10 @@ extension PlistObjectEncoder {
 extension PlistObjectEncoder {
     private class ReferencingEncoder: PlistObjectEncoder {
         private let referenceCodingPath: [CodingKey]
-        private let completion: (_ value: Any) -> Void
+        private let completion: (_ encodedObject: Any) -> Void
         
         init(referencing encoder: PlistObjectEncoder, at index: Int,
-             completion: @escaping (_ value: Any) -> Void = { _ in }) {
+             completion: @escaping (_ encodedObject: Any) -> Void) {
             
             self.referenceCodingPath = encoder.codingPath
             self.completion = completion
@@ -129,7 +166,7 @@ extension PlistObjectEncoder {
         }
         
         init(referencing encoder: PlistObjectEncoder, at key: CodingKey,
-             completion: @escaping (_ value: Any) -> Void = { _ in }) {
+             completion: @escaping (_ encodedObject: Any) -> Void) {
             
             self.referenceCodingPath = encoder.codingPath
             self.completion = completion
@@ -138,16 +175,16 @@ extension PlistObjectEncoder {
         }
         
         deinit {
-            let value: Any
+            let encodedObject: Any
             switch storage.count {
-            case 0: value = [:] as [String: Any]
-            case 1: value = storage.popContainer()
+            case 0: encodedObject = [:] as [String: Any]
+            case 1: encodedObject = storage.popContainer().object
             default:
                 preconditionFailure(
                     "Referencing encoder deallocated with multiple containers on stack.")
             }
             
-            completion(value)
+            completion(encodedObject)
         }
         
         override var canEncodeNewValue: Bool {
@@ -159,43 +196,75 @@ extension PlistObjectEncoder {
 extension PlistObjectEncoder {
     private class PlistKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         private let encoder: PlistObjectEncoder
-        private let completion: (_ container: [String: Any]) -> Void
-        private var container: [String: Any] = [:]
+        private let container: DictionaryContainer
+        private let completion: (_ encodedObject: [String: Any]) -> Void
         
         let codingPath: [CodingKey]
         
-        init(referencing encoder: PlistObjectEncoder, codingPath: [CodingKey],
-             completion: @escaping (_ container: [String: Any]) -> Void) {
+        init(referencing encoder: PlistObjectEncoder,
+             codingPath: [CodingKey], container: DictionaryContainer,
+             completion: @escaping (_ encodedObject: [String: Any]) -> Void = { _ in }) {
             
             self.encoder = encoder
+            self.container = container
             self.completion = completion
             self.codingPath = codingPath
         }
         
         deinit {
-            completion(container)
+            completion(container.dictionary)
         }
         
-        func encode(_ value: Bool, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Int, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Int8, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Int16, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Int32, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Int64, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: UInt, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: UInt8, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: UInt16, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: UInt32, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: UInt64, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Float, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: Double, forKey key: Key) throws { container[key.stringValue] = value }
-        func encode(_ value: String, forKey key: Key) throws { container[key.stringValue] = value }
-        func encodeNil(forKey key: Key) throws { container[key.stringValue] = Constant.nullValue }
+        func encode(_ value: Bool, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Int, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Int8, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Int16, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Int32, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Int64, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: UInt, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: UInt8, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: UInt16, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: UInt32, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: UInt64, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Float, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: Double, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encode(_ value: String, forKey key: Key) throws {
+            container.dictionary[key.stringValue] = value
+        }
+        func encodeNil(forKey key: Key) throws {
+            container.dictionary[key.stringValue] = Constant.nullValue
+        }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.codingPath.append(key)
             defer { encoder.codingPath.removeLast() }
-            container[key.stringValue] = try encoder.box(value)
+            container.dictionary[key.stringValue] = try encoder.box(value)
         }
         
         func nestedContainer<NestedKey: CodingKey>(
@@ -205,7 +274,8 @@ extension PlistObjectEncoder {
             let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [key],
-                completion: { self.container[key.stringValue] = $0 })
+                container: DictionaryContainer(),
+                completion: { self.container.dictionary[key.stringValue] = $0 })
             return KeyedEncodingContainer(keyedContainer)
         }
         
@@ -213,20 +283,21 @@ extension PlistObjectEncoder {
             return PlistUnkeyedEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [key],
-                completion: { self.container[key.stringValue] = $0 })
+                container: ArrayContainer(),
+                completion: { self.container.dictionary[key.stringValue] = $0 })
         }
         
         func superEncoder() -> Encoder {
             let key = PlistObjectKey.superKey
             return ReferencingEncoder(
                 referencing: encoder, at: key,
-                completion: { self.container[key.stringValue] = $0 })
+                completion: { self.container.dictionary[key.stringValue] = $0 })
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
             return ReferencingEncoder(
                 referencing: encoder, at: key,
-                completion: { self.container[key.stringValue] = $0 })
+                completion: { self.container.dictionary[key.stringValue] = $0 })
         }
     }
 }
@@ -234,81 +305,84 @@ extension PlistObjectEncoder {
 extension PlistObjectEncoder {
     private class PlistUnkeyedEncodingContanier: UnkeyedEncodingContainer {
         private let encoder: PlistObjectEncoder
-        private let completion: (_ container: [Any]) -> Void
-        private var container: [Any] = []
+        private let container: ArrayContainer
+        private let completion: (_ encodedObject: [Any]) -> Void
         
         let codingPath: [CodingKey]
         var count: Int {
-            return container.count
+            return container.array.count
         }
         
-        init(referencing encoder: PlistObjectEncoder, codingPath: [CodingKey],
-             completion: @escaping (_ container: [Any]) -> Void) {
+        init(referencing encoder: PlistObjectEncoder,
+             codingPath: [CodingKey], container: ArrayContainer,
+             completion: @escaping (_ encodedObject: [Any]) -> Void = { _ in }) {
             
             self.encoder = encoder
+            self.container = container
             self.completion = completion
             self.codingPath = codingPath
         }
         
         deinit {
-            completion(container)
+            completion(container.array)
         }
         
-        func encode(_ value: Bool) throws { container.append(value)}
-        func encode(_ value: Int) throws { container.append(value) }
-        func encode(_ value: Int8) throws { container.append(value) }
-        func encode(_ value: Int16) throws { container.append(value) }
-        func encode(_ value: Int32) throws { container.append(value) }
-        func encode(_ value: Int64) throws { container.append(value) }
-        func encode(_ value: UInt) throws { container.append(value) }
-        func encode(_ value: UInt8) throws { container.append(value) }
-        func encode(_ value: UInt16) throws { container.append(value) }
-        func encode(_ value: UInt32) throws { container.append(value) }
-        func encode(_ value: UInt64) throws { container.append(value) }
-        func encode(_ value: Float) throws { container.append(value) }
-        func encode(_ value: Double) throws { container.append(value) }
-        func encode(_ value: String) throws { container.append(value) }
-        func encodeNil() throws { container.append(Constant.nullValue) }
+        func encode(_ value: Bool) throws { container.array.append(value)}
+        func encode(_ value: Int) throws { container.array.append(value) }
+        func encode(_ value: Int8) throws { container.array.append(value) }
+        func encode(_ value: Int16) throws { container.array.append(value) }
+        func encode(_ value: Int32) throws { container.array.append(value) }
+        func encode(_ value: Int64) throws { container.array.append(value) }
+        func encode(_ value: UInt) throws { container.array.append(value) }
+        func encode(_ value: UInt8) throws { container.array.append(value) }
+        func encode(_ value: UInt16) throws { container.array.append(value) }
+        func encode(_ value: UInt32) throws { container.array.append(value) }
+        func encode(_ value: UInt64) throws { container.array.append(value) }
+        func encode(_ value: Float) throws { container.array.append(value) }
+        func encode(_ value: Double) throws { container.array.append(value) }
+        func encode(_ value: String) throws { container.array.append(value) }
+        func encodeNil() throws { container.array.append(Constant.nullValue) }
         
         func encode<T: Encodable>(_ value: T) throws {
             encoder.codingPath.append(PlistObjectKey(index: count))
             defer { encoder.codingPath.removeLast() }
-            container.append(try encoder.box(value))
+            container.array.append(try encoder.box(value))
         }
         
         func nestedContainer<NestedKey: CodingKey>(
             keyedBy keyType: NestedKey.Type) -> KeyedEncodingContainer<NestedKey> {
             
             let index = count
-            let placeholder = "placeholder for nestedContainer at \(index)"
-            container.append(placeholder)
+            let nestedContainer = DictionaryContainer()
+            container.array.append(nestedContainer.dictionary)
             
             let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
-                completion: { self.container[index] = $0 })
+                container: nestedContainer,
+                completion: { self.container.array[index] = $0 })
             return KeyedEncodingContainer(keyedContainer)
         }
         
         func nestedUnkeyedContainer() -> UnkeyedEncodingContainer {
             let index = count
-            let placeholder = "placeholder for nestedUnkeyedContainer at \(index)"
-            container.append(placeholder)
+            let nestedContainer = ArrayContainer()
+            container.array.append(nestedContainer.array)
             
             return PlistUnkeyedEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [PlistObjectKey(index: index)],
-                completion: { self.container[index] = $0 })
+                container: nestedContainer,
+                completion: { self.container.array[index] = $0 })
         }
         
         func superEncoder() -> Encoder {
             let index = count
-            let placeholder = "placeholder for superEncoder at \(index)"
-            container.append(placeholder)
+            container.array.append("placeholder for superEncoder")
             
             return ReferencingEncoder(
                 referencing: encoder, at: index,
-                completion: { self.container[index] = $0 })
+                completion: { self.container.array[index] = $0 })
         }
     }
     
@@ -331,82 +405,82 @@ extension PlistObjectEncoder {
         
         func encode(_ value: Bool) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Int) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Int8) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Int16) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Int32) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Int64) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: UInt) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: UInt8) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: UInt16) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: UInt32) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: UInt64) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Float) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: Double) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encode(_ value: String) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(value)
+            encoder.storage.pushContainer(AnyContainer(object: value))
         }
         
         func encodeNil() throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(Constant.nullValue)
+            encoder.storage.pushContainer(AnyContainer(object: Constant.nullValue))
         }
         
         func encode<T: Encodable>(_ value: T) throws {
             assertCanEncodeNewValue()
-            encoder.storage.pushContainer(try encoder.box(value))
+            encoder.storage.pushContainer(AnyContainer(object: try encoder.box(value)))
         }
     }
 }
