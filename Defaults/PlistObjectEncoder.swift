@@ -6,6 +6,7 @@ import Foundation
 public class PlistObjectEncoder: Encoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
+    public var nilSymbol: String = Constant.defaultNilSymbol
     private let storage: Storage = Storage()
     
     public init() {
@@ -88,6 +89,16 @@ extension PlistObjectEncoder {
     }
 }
 
+// MARK: -
+
+extension PlistObjectEncoder {
+    internal enum Constant {
+        static let defaultNilSymbol = "$null"
+    }
+}
+
+// MARK: -
+
 private protocol PlistObjectContainer {
     var object: Any { get }
 }
@@ -158,6 +169,8 @@ extension PlistObjectEncoder {
     }
 }
 
+// MARK: -
+
 extension PlistObjectEncoder {
     private class ReferencingEncoder: PlistObjectEncoder {
         private let referenceCodingPath: [CodingKey]
@@ -200,6 +213,8 @@ extension PlistObjectEncoder {
     }
 }
 
+// MARK: -
+
 extension PlistObjectEncoder {
     private class PlistKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
         private let encoder: PlistObjectEncoder
@@ -236,7 +251,7 @@ extension PlistObjectEncoder {
         func encode(_ value: Float, forKey key: Key) throws { container.set(value, for: key) }
         func encode(_ value: Double, forKey key: Key) throws { container.set(value, for: key) }
         func encode(_ value: String, forKey key: Key) throws { container.set(value, for: key) }
-        func encodeNil(forKey key: Key) throws { container.set(Constant.nullValue, for: key) }
+        func encodeNil(forKey key: Key) throws { container.set(encoder.nilSymbol, for: key) }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.codingPath.append(key)
@@ -265,10 +280,8 @@ extension PlistObjectEncoder {
         }
         
         func superEncoder() -> Encoder {
-            let key = PlistObjectKey.superKey
-            return ReferencingEncoder(
-                referencing: encoder, at: key,
-                completion: { [container] in container.set($0, for: key) })
+            let key = Key(stringValue: PlistObjectKey.superKey.stringValue)!
+            return superEncoder(forKey: key)
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
@@ -278,6 +291,8 @@ extension PlistObjectEncoder {
         }
     }
 }
+
+// MARK: -
 
 extension PlistObjectEncoder {
     private class PlistUnkeyedEncodingContanier: UnkeyedEncodingContainer {
@@ -318,7 +333,7 @@ extension PlistObjectEncoder {
         func encode(_ value: Float) throws { container.append(value) }
         func encode(_ value: Double) throws { container.append(value) }
         func encode(_ value: String) throws { container.append(value) }
-        func encodeNil() throws { container.append(Constant.nullValue) }
+        func encodeNil() throws { container.append(encoder.nilSymbol) }
         
         func encode<T: Encodable>(_ value: T) throws {
             encoder.codingPath.append(PlistObjectKey(index: count))
@@ -360,7 +375,11 @@ extension PlistObjectEncoder {
                 completion: { [container] in container.replace(at: index, with: $0) })
         }
     }
-    
+}
+
+// MARK: -
+
+extension PlistObjectEncoder {
     private class PlistSingleValueEncodingContanier: SingleValueEncodingContainer {
         private let encoder: PlistObjectEncoder
         
@@ -399,16 +418,10 @@ extension PlistObjectEncoder {
         func encode(_ value: Float) throws { pushContainer(with: value) }
         func encode(_ value: Double) throws { pushContainer(with: value) }
         func encode(_ value: String) throws { pushContainer(with: value) }
-        func encodeNil() throws { pushContainer(with: Constant.nullValue) }
+        func encodeNil() throws { pushContainer(with: encoder.nilSymbol) }
         func encode<T: Encodable>(_ value: T) throws {
             pushContainer(with: try encoder.box(value))
         }
-    }
-}
-
-extension PlistObjectEncoder {
-    internal enum Constant {
-        static let nullValue = "$null"
     }
 }
 
