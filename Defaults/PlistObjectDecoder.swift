@@ -33,7 +33,7 @@ public class PlistObjectDecoder: Decoder {
         }
         
         let decodingContainer = PlistKeyedDecodingContainer<Key>(
-            referencing: self, container: topContainer)
+            referencing: self, codingPath: codingPath, container: topContainer)
         return KeyedDecodingContainer(decodingContainer)
     }
     
@@ -49,11 +49,12 @@ public class PlistObjectDecoder: Decoder {
                                      reality: storage.topContainer)
         }
         
-        return PlistUnkeyedDecodingContainer(referencing: self, container: topContainer)
+        return PlistUnkeyedDecodingContainer(
+            referencing: self, codingPath: codingPath, container: topContainer)
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
-        return PlistSingleValueDecodingContainer(referencing: self)
+        return PlistSingleValueDecodingContainer(referencing: self, codingPath: codingPath)
     }
 }
 
@@ -115,10 +116,12 @@ extension PlistObjectDecoder {
             return container.keys.compactMap { Key(stringValue: $0) }
         }
         
-        init(referencing decoder: PlistObjectDecoder, container: [String: Any]) {
+        init(referencing decoder: PlistObjectDecoder,
+             codingPath: [CodingKey], container: [String: Any]) {
+            
             self.decoder = decoder
             self.container = container
-            self.codingPath = decoder.codingPath
+            self.codingPath = codingPath
         }
         
         func contains(_ key: Key) -> Bool {
@@ -192,7 +195,7 @@ extension PlistObjectDecoder {
         func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
             let value = try self.value(forKey: key)
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: codingPath + [key], expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
             decoder.codingPath.append(key)
@@ -203,7 +206,7 @@ extension PlistObjectDecoder {
         
         private func value(forKey key: Key) throws -> Any {
             guard let result = container[key.stringValue] else {
-                throw Error.keyNotFound(codingPath: codingPath, key: key)
+                throw Error.keyNotFound(codingPath: decoder.codingPath, key: key)
             }
             return result
         }
@@ -213,53 +216,54 @@ extension PlistObjectDecoder {
             
             let value = try self.value(forKey: key)
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: codingPath + [key], expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
-            return try T(value: value, codingPath: codingPath + [key])
+            return try T(value: value, codingPath: decoder.codingPath + [key])
         }
         
         func nestedContainer<NestedKey: CodingKey>(
             keyedBy type: NestedKey.Type,
             forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> {
             
+            let nestedCodingPath = codingPath + [key]
+            
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get nested keyed container -- "
                     + "no value found for key \"\(key.stringValue)\""
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: nestedCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(KeyedDecodingContainer<NestedKey>.self, context)
             }
             
             guard let dictionary = value as? [String: Any] else {
-                throw Error.typeMismatch(codingPath: codingPath, expectation: [String: Any].self,
-                                         reality: value)
+                throw Error.typeMismatch(codingPath: nestedCodingPath,
+                                         expectation: [String: Any].self, reality: value)
             }
             
-            decoder.codingPath.append(key)
-            defer { decoder.codingPath.removeLast() }
-            
             let keyedContainer = PlistKeyedDecodingContainer<NestedKey>(
-                referencing: decoder, container: dictionary)
+                referencing: decoder, codingPath: nestedCodingPath, container: dictionary)
             return KeyedDecodingContainer(keyedContainer)
         }
         
         func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
+            let nestedCodingPath = codingPath + [key]
+            
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get nested unkeyed container -- "
                     + "no value found for key \"\(key.stringValue)\""
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: nestedCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
             }
             
             guard let array = value as? [Any] else {
-                throw Error.typeMismatch(codingPath: codingPath, expectation: [Any].self,
-                                         reality: value)
+                throw Error.typeMismatch(codingPath: nestedCodingPath,
+                                         expectation: [Any].self, reality: value)
             }
             
-            decoder.codingPath.append(key)
-            defer { decoder.codingPath.removeLast() }
-            
-            return PlistUnkeyedDecodingContainer(referencing: decoder, container: array)
+            return PlistUnkeyedDecodingContainer(
+                referencing: decoder, codingPath: nestedCodingPath, container: array)
         }
         
         func superDecoder() throws -> Decoder {
@@ -268,13 +272,16 @@ extension PlistObjectDecoder {
         }
         
         func superDecoder(forKey key: Key) throws -> Decoder {
+            let superCodingPath = codingPath + [key]
+            
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get superDecoder() -- "
                     + "no value found for key \"\(key.stringValue)\""
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: superCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
             }
-            return PlistObjectDecoder(codingPath: codingPath + [key], container: value)
+            return PlistObjectDecoder(codingPath: superCodingPath, container: value)
         }
     }
 }
@@ -298,14 +305,10 @@ extension PlistObjectDecoder {
             return currentIndex >= count!
         }
         
-        private var currentCodingPath: [CodingKey] {
-            return codingPath + [PlistObjectKey(index: currentIndex)]
-        }
-        
-        init(referencing decoder: PlistObjectDecoder, container: [Any]) {
+        init(referencing decoder: PlistObjectDecoder, codingPath: [CodingKey], container: [Any]) {
             self.decoder = decoder
             self.container = container
-            self.codingPath = decoder.codingPath
+            self.codingPath = codingPath
             self.currentIndex = 0
         }
         
@@ -383,13 +386,13 @@ extension PlistObjectDecoder {
                 throw makeEndOfContainerError(expectation: type)
             }
             
-            let value = container[currentIndex]
-            if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: currentCodingPath, expectation: type)
-            }
-            
             decoder.codingPath.append(PlistObjectKey(index: currentIndex))
             defer { decoder.codingPath.removeLast() }
+            
+            let value = container[currentIndex]
+            if let string = value as? String, string == decoder.nilSymbol {
+                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
+            }
             
             let decodedValue = try decoder.unbox(value, as: type)
             currentIndex += 1
@@ -398,6 +401,7 @@ extension PlistObjectDecoder {
         }
         
         private func makeEndOfContainerError(expectation: Any.Type) -> DecodingError {
+            let currentCodingPath = decoder.codingPath + [PlistObjectKey(index: currentIndex)]
             let context = DecodingError.Context(codingPath: currentCodingPath,
                                                 debugDescription: "Unkeyed container is at end.")
             return DecodingError.valueNotFound(expectation, context)
@@ -408,12 +412,15 @@ extension PlistObjectDecoder {
                 throw makeEndOfContainerError(expectation: type)
             }
             
+            decoder.codingPath.append(PlistObjectKey(index: currentIndex))
+            defer { decoder.codingPath.removeLast() }
+            
             let value = container[currentIndex]
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: currentCodingPath, expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
             }
             
-            let decodedValue = try T(value: value, codingPath: currentCodingPath)
+            let decodedValue = try T(value: value, codingPath: decoder.codingPath)
             currentIndex += 1
             
             return decodedValue
@@ -422,63 +429,65 @@ extension PlistObjectDecoder {
         mutating func nestedContainer<NestedKey: CodingKey >(
             keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> {
             
+            let nestedCodingPath = codingPath + [PlistObjectKey(index: currentIndex)]
+            
             guard !isAtEnd else {
                 let desc = "Cannot get nested keyed container -- unkeyed container is at end."
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: nestedCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(KeyedDecodingContainer<NestedKey>.self, context)
             }
             
             let value = container[currentIndex]
             guard let dictionary = value as? [String: Any] else {
-                throw Error.typeMismatch(codingPath: codingPath, expectation: [String: Any].self,
-                                         reality: value)
+                throw Error.typeMismatch(codingPath: nestedCodingPath,
+                                         expectation: [String: Any].self, reality: value)
             }
-            
-            decoder.codingPath.append(PlistObjectKey(index: currentIndex))
-            defer { decoder.codingPath.removeLast() }
             
             currentIndex += 1
             
             let keyedContainer = PlistKeyedDecodingContainer<NestedKey>(
-                referencing: decoder, container: dictionary)
+                referencing: decoder, codingPath: nestedCodingPath, container: dictionary)
             return KeyedDecodingContainer(keyedContainer)
         }
         
         mutating func nestedUnkeyedContainer() throws -> UnkeyedDecodingContainer {
+            let nestedCodingPath = codingPath + [PlistObjectKey(index: currentIndex)]
+            
             guard !isAtEnd else {
                 let desc = "Cannot get nested unkeyed container -- unkeyed container is at end."
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: nestedCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
             }
             
             let value = container[currentIndex]
             guard let array = value as? [Any] else {
-                throw Error.typeMismatch(codingPath: codingPath, expectation: [Any].self,
-                                         reality: value)
+                throw Error.typeMismatch(codingPath: nestedCodingPath,
+                                         expectation: [Any].self, reality: value)
             }
-            
-            decoder.codingPath.append(PlistObjectKey(index: currentIndex))
-            defer { decoder.codingPath.removeLast() }
             
             currentIndex += 1
             
-            return PlistUnkeyedDecodingContainer(referencing: decoder, container: array)
+            return PlistUnkeyedDecodingContainer(
+                referencing: decoder, codingPath: nestedCodingPath, container: array)
         }
         
         mutating func superDecoder() throws -> Decoder {
+            let superCodingPath = codingPath + [PlistObjectKey(index: currentIndex)]
+            
             guard !isAtEnd else {
                 let desc = "Cannot get superDecoder() -- unkeyed container is at end."
-                let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
+                let context = DecodingError.Context(codingPath: superCodingPath,
+                                                    debugDescription: desc)
                 throw DecodingError.valueNotFound(Decoder.self, context)
             }
             
             let value = container[currentIndex]
             
-            let codingPathForSuper = currentCodingPath
-            
             currentIndex += 1
             
-            return PlistObjectDecoder(codingPath: codingPathForSuper, container: value)
+            return PlistObjectDecoder(codingPath: superCodingPath, container: value)
         }
     }
 }
@@ -491,9 +500,9 @@ extension PlistObjectDecoder {
         
         let codingPath: [CodingKey]
         
-        init(referencing decoder: PlistObjectDecoder) {
+        init(referencing decoder: PlistObjectDecoder, codingPath: [CodingKey]) {
             self.decoder = decoder
-            self.codingPath = decoder.codingPath
+            self.codingPath = codingPath
         }
         
         func decodeNil() -> Bool {
@@ -505,65 +514,65 @@ extension PlistObjectDecoder {
         }
         
         func decode(_ type: Bool.Type) throws -> Bool {
-            return try Bool(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Bool(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Int.Type) throws -> Int {
-            return try Int(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Int(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Int8.Type) throws -> Int8 {
-            return try Int8(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Int8(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Int16.Type) throws -> Int16 {
-            return try Int16(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Int16(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Int32.Type) throws -> Int32 {
-            return try Int32(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Int32(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Int64.Type) throws -> Int64 {
-            return try Int64(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Int64(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: UInt.Type) throws -> UInt {
-            return try UInt(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try UInt(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: UInt8.Type) throws -> UInt8 {
-            return try UInt8(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try UInt8(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: UInt16.Type) throws -> UInt16 {
-            return try UInt16(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try UInt16(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: UInt32.Type) throws -> UInt32 {
-            return try UInt32(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try UInt32(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: UInt64.Type) throws -> UInt64 {
-            return try UInt64(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try UInt64(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Float.Type) throws -> Float {
-            return try Float(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Float(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: Double.Type) throws -> Double {
-            return try Double(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try Double(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode(_ type: String.Type) throws -> String {
-            return try String(value: decoder.storage.topContainer, codingPath: codingPath)
+            return try String(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
         func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
             let value = decoder.storage.topContainer
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: codingPath, expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
             }
             
             return try decoder.unbox(value, as: type)
@@ -572,10 +581,10 @@ extension PlistObjectDecoder {
         private func decodeValue<T: InitializableWithAny>(type: T.Type) throws -> T {
             let value = decoder.storage.topContainer
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: codingPath, expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
             }
             
-            return try T(value: value, codingPath: codingPath)
+            return try T(value: value, codingPath: decoder.codingPath)
         }
     }
 }
