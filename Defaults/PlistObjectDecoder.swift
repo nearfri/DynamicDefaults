@@ -59,6 +59,16 @@ public class PlistObjectDecoder: Decoder {
 }
 
 extension PlistObjectDecoder {
+    public func decode<T: Decodable>(_ type: T.Type, from value: Any) throws -> T {
+        defer { cleanup() }
+        return try unbox(value, as: type)
+    }
+    
+    private func cleanup() {
+        codingPath.removeAll()
+        storage.removeAll()
+    }
+    
     private func unbox<T: Decodable>(_ value: Any, as type: T.Type) throws -> T {
         if let value = value as? T {
             return value
