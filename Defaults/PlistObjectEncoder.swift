@@ -176,22 +176,12 @@ extension PlistObjectEncoder {
         private let referenceCodingPath: [CodingKey]
         private let completion: (_ encodedObject: Any) -> Void
         
-        init(referencing encoder: PlistObjectEncoder, at index: Int,
+        init(referenceCodingPath: [CodingKey], key: CodingKey,
              completion: @escaping (_ encodedObject: Any) -> Void) {
             
-            self.referenceCodingPath = encoder.codingPath
+            self.referenceCodingPath = referenceCodingPath
             self.completion = completion
-            let codingPath = encoder.codingPath + [PlistObjectKey(index: index)]
-            super.init(codingPath: codingPath)
-        }
-        
-        init(referencing encoder: PlistObjectEncoder, at key: CodingKey,
-             completion: @escaping (_ encodedObject: Any) -> Void) {
-            
-            self.referenceCodingPath = encoder.codingPath
-            self.completion = completion
-            let codingPath = encoder.codingPath + [key]
-            super.init(codingPath: codingPath)
+            super.init(codingPath: referenceCodingPath + [key])
         }
         
         deinit {
@@ -286,7 +276,7 @@ extension PlistObjectEncoder {
         
         func superEncoder(forKey key: Key) -> Encoder {
             return ReferencingEncoder(
-                referencing: encoder, at: key,
+                referenceCodingPath: codingPath, key: key,
                 completion: { [container] in container.set($0, for: key) })
         }
     }
@@ -371,7 +361,7 @@ extension PlistObjectEncoder {
             container.append("placeholder for superEncoder")
             
             return ReferencingEncoder(
-                referencing: encoder, at: index,
+                referenceCodingPath: codingPath, key: PlistObjectKey(index: index),
                 completion: { [container] in container.replace(at: index, with: $0) })
         }
     }
