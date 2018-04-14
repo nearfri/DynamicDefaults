@@ -277,11 +277,14 @@ extension PlistObjectDecoder {
         }
         
         func superDecoder() throws -> Decoder {
-            let key = Key(stringValue: PlistObjectKey.superKey.stringValue)!
-            return try superDecoder(forKey: key)
+            return try makeSuperDecoder(key: PlistObjectKey.superKey)
         }
         
         func superDecoder(forKey key: Key) throws -> Decoder {
+            return try makeSuperDecoder(key: key)
+        }
+        
+        private func makeSuperDecoder(key: CodingKey) throws -> Decoder {
             let superCodingPath = codingPath + [key]
             
             guard let value = container[key.stringValue] else {

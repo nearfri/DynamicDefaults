@@ -270,8 +270,10 @@ extension PlistObjectEncoder {
         }
         
         func superEncoder() -> Encoder {
-            let key = Key(stringValue: PlistObjectKey.superKey.stringValue)!
-            return superEncoder(forKey: key)
+            let key = PlistObjectKey.superKey
+            return ReferencingEncoder(
+                referenceCodingPath: codingPath, key: key,
+                completion: { [container] in container.set($0, for: key) })
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
