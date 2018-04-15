@@ -81,6 +81,21 @@ extension PlistObjectDecoder {
     }
 }
 
+extension PlistObjectDecoder {
+    public func decodeValue(of type: Decodable.Type, from value: Any) throws -> Any {
+        defer { cleanup() }
+        
+        if Swift.type(of: value) == type {
+            return value
+        }
+        
+        storage.pushContainer(value)
+        defer { storage.popContainer() }
+        
+        return try type.init(from: self)
+    }
+}
+
 // MARK: -
 
 extension PlistObjectDecoder {

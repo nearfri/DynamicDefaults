@@ -7,6 +7,7 @@ public class PlistObjectEncoder: Encoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
     public var nilSymbol: String = Constant.defaultNilSymbol
+    public var passthroughTypes: [Encodable.Type] = [Data.self, Date.self]
     private let storage: Storage = Storage()
     
     public init() {
@@ -68,10 +69,17 @@ extension PlistObjectEncoder {
     }
     
     private func box<T: Encodable>(_ value: T) throws -> Any {
-        if T.self == Data.self || T.self == Date.self || T.self == URL.self {
+        if isPassthroughType(T.self) {
             return value
         }
-        
+        return try boxValue(value)
+    }
+    
+    private func isPassthroughType(_ type: Encodable.Type) -> Bool {
+        return passthroughTypes.contains(where: { type == $0 })
+    }
+    
+    private func boxValue(_ value: Encodable) throws -> Any {
         let depth = storage.count
         do {
             try value.encode(to: self)
@@ -86,6 +94,17 @@ extension PlistObjectEncoder {
             return [:] as [String: Any]
         }
         return storage.popContainer().object
+    }
+}
+
+extension PlistObjectEncoder {
+    public func encodeValue(_ value: Encodable) throws -> Any {
+        defer { cleanup() }
+        
+        if isPassthroughType(type(of: value)) {
+            return value
+        }
+        return try boxValue(value)
     }
 }
 
