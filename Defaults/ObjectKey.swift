@@ -1,7 +1,7 @@
 
 import Foundation
 
-internal struct PlistObjectKey: CodingKey {
+internal struct ObjectKey: CodingKey {
     public let stringValue: String
     public let intValue: Int?
     
@@ -20,7 +20,7 @@ internal struct PlistObjectKey: CodingKey {
         self.intValue = index
     }
     
-    public static let superKey = PlistObjectKey(stringValue: "super")!
+    public static let superKey = ObjectKey(stringValue: "super")!
 }
 
 

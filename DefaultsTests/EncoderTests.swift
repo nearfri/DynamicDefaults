@@ -111,7 +111,7 @@ class EncoderTests: XCTestCase {
     }
     
     func testMyEncoder() {
-        let encoder = PlistObjectEncoder()
+        let encoder = ObjectEncoder()
         
         let dog = Dog()
         dog.name = "Bow"
@@ -123,8 +123,8 @@ class EncoderTests: XCTestCase {
         let ret = try! encoder.encode(dog) as! [String: Any]
         print(ret)
         
-        let decoder = PlistObjectDecoder()
-        let dog2 = try! decoder.decode(type: Dog.self, from: ret)
+        let decoder = ObjectDecoder()
+        let dog2 = try! decoder.decodeValue(of: Dog.self, from: ret)
         print("dog1", dog)
         print("dog2", dog2)
     }

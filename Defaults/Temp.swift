@@ -95,7 +95,7 @@ open class BasePreferences2: NSObject {
     
     private func encode(_ value: Any?) throws -> Any {
         guard let value = value else {
-            return PlistObjectEncoder().nilSymbol
+            return ObjectEncoder().nilSymbol
         }
         
         switch value {

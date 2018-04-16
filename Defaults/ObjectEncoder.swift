@@ -3,7 +3,7 @@ import Foundation
 
 // ref.: https://github.com/apple/swift/blob/master/stdlib/public/SDK/Foundation/PlistEncoder.swift
 
-public class PlistObjectEncoder: Encoder {
+public class ObjectEncoder: Encoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
     public var nilSymbol: String = Constant.defaultNilSymbol
@@ -28,7 +28,7 @@ public class PlistObjectEncoder: Encoder {
                 + "when already previously encoded at this path.")
         }
         
-        let keyedContainer = PlistKeyedEncodingContainer<Key>(
+        let keyedContainer = KeyedObjectEncodingContainer<Key>(
             referencing: self, codingPath: codingPath, container: topContainer)
         
         return KeyedEncodingContainer(keyedContainer)
@@ -44,12 +44,12 @@ public class PlistObjectEncoder: Encoder {
                 + "when already previously encoded at this path.")
         }
         
-        return PlistUnkeyedEncodingContanier(
+        return UnkeyedObjectEncodingContanier(
             referencing: self, codingPath: codingPath, container: topContainer)
     }
     
     public func singleValueContainer() -> SingleValueEncodingContainer {
-        return PlistSingleValueEncodingContanier(referencing: self, codingPath: codingPath)
+        return SingleValueObjectEncodingContanier(referencing: self, codingPath: codingPath)
     }
     
     private var canEncodeNewValue: Bool {
@@ -57,7 +57,7 @@ public class PlistObjectEncoder: Encoder {
     }
 }
 
-extension PlistObjectEncoder {
+extension ObjectEncoder {
     public func encode<T: Encodable>(_ value: T) throws -> Any {
         defer { cleanup() }
         return try box(value)
@@ -97,7 +97,7 @@ extension PlistObjectEncoder {
     }
 }
 
-extension PlistObjectEncoder {
+extension ObjectEncoder {
     public func encodeValue(_ value: Encodable) throws -> Any {
         defer { cleanup() }
         
@@ -110,7 +110,7 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-extension PlistObjectEncoder {
+extension ObjectEncoder {
     internal enum Constant {
         static let defaultNilSymbol = "$null"
     }
@@ -118,12 +118,12 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-private protocol PlistObjectContainer {
+private protocol ObjectContainer {
     var object: Any { get }
 }
 
-extension PlistObjectEncoder {
-    private class DictionaryContainer: PlistObjectContainer {
+extension ObjectEncoder {
+    private class DictionaryContainer: ObjectContainer {
         private var dictionary: [String: Any] = [:]
         var object: Any { return dictionary }
         
@@ -132,7 +132,7 @@ extension PlistObjectEncoder {
         }
     }
     
-    private class ArrayContainer: PlistObjectContainer {
+    private class ArrayContainer: ObjectContainer {
         private var array: [Any] = []
         var object: Any { return array }
         
@@ -149,7 +149,7 @@ extension PlistObjectEncoder {
         }
     }
     
-    private class AnyContainer: PlistObjectContainer {
+    private class AnyContainer: ObjectContainer {
         var object: Any
         
         init(object: Any) {
@@ -158,24 +158,24 @@ extension PlistObjectEncoder {
     }
     
     private class Storage {
-        private(set) var containers: [PlistObjectContainer] = []
+        private(set) var containers: [ObjectContainer] = []
         
         var count: Int {
             return containers.count
         }
         
-        var topContainer: PlistObjectContainer {
+        var topContainer: ObjectContainer {
             guard let result = containers.last else {
                 preconditionFailure("Empty container stack.")
             }
             return result
         }
         
-        func pushContainer(_ container: PlistObjectContainer) {
+        func pushContainer(_ container: ObjectContainer) {
             containers.append(container)
         }
         
-        func popContainer() -> PlistObjectContainer {
+        func popContainer() -> ObjectContainer {
             guard let result = containers.popLast() else {
                 preconditionFailure("Empty container stack.")
             }
@@ -190,8 +190,8 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-extension PlistObjectEncoder {
-    private class ReferencingEncoder: PlistObjectEncoder {
+extension ObjectEncoder {
+    private class ReferencingEncoder: ObjectEncoder {
         private let referenceCodingPath: [CodingKey]
         private let completion: (_ encodedObject: Any) -> Void
         
@@ -224,15 +224,15 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-extension PlistObjectEncoder {
-    private class PlistKeyedEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-        private let encoder: PlistObjectEncoder
+extension ObjectEncoder {
+    private class KeyedObjectEncodingContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
+        private let encoder: ObjectEncoder
         private let container: DictionaryContainer
         private let completion: (_ object: Any) -> Void
         
         let codingPath: [CodingKey]
         
-        init(referencing encoder: PlistObjectEncoder,
+        init(referencing encoder: ObjectEncoder,
              codingPath: [CodingKey], container: DictionaryContainer,
              completion: @escaping (_ object: Any) -> Void = { _ in }) {
             
@@ -272,7 +272,7 @@ extension PlistObjectEncoder {
             keyedBy keyType: NestedKey.Type,
             forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
             
-            let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
+            let keyedContainer = KeyedObjectEncodingContainer<NestedKey>(
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 container: DictionaryContainer(),
@@ -281,7 +281,7 @@ extension PlistObjectEncoder {
         }
         
         func nestedUnkeyedContainer(forKey key: Key) -> UnkeyedEncodingContainer {
-            return PlistUnkeyedEncodingContanier(
+            return UnkeyedObjectEncodingContanier(
                 referencing: encoder,
                 codingPath: codingPath + [key],
                 container: ArrayContainer(),
@@ -289,7 +289,7 @@ extension PlistObjectEncoder {
         }
         
         func superEncoder() -> Encoder {
-            let key = PlistObjectKey.superKey
+            let key = ObjectKey.superKey
             return ReferencingEncoder(
                 referenceCodingPath: codingPath, key: key,
                 completion: { [container] in container.set($0, for: key) })
@@ -305,9 +305,9 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-extension PlistObjectEncoder {
-    private class PlistUnkeyedEncodingContanier: UnkeyedEncodingContainer {
-        private let encoder: PlistObjectEncoder
+extension ObjectEncoder {
+    private class UnkeyedObjectEncodingContanier: UnkeyedEncodingContainer {
+        private let encoder: ObjectEncoder
         private let container: ArrayContainer
         private let completion: (_ object: Any) -> Void
         
@@ -316,7 +316,7 @@ extension PlistObjectEncoder {
             return container.count
         }
         
-        init(referencing encoder: PlistObjectEncoder,
+        init(referencing encoder: ObjectEncoder,
              codingPath: [CodingKey], container: ArrayContainer,
              completion: @escaping (_ object: Any) -> Void = { _ in }) {
             
@@ -347,7 +347,7 @@ extension PlistObjectEncoder {
         func encodeNil() throws { container.append(encoder.nilSymbol) }
         
         func encode<T: Encodable>(_ value: T) throws {
-            encoder.codingPath.append(PlistObjectKey(index: count))
+            encoder.codingPath.append(ObjectKey(index: count))
             defer { encoder.codingPath.removeLast() }
             container.append(try encoder.box(value))
         }
@@ -358,9 +358,9 @@ extension PlistObjectEncoder {
             let index = count
             container.append([:] as [String: Any])
             
-            let keyedContainer = PlistKeyedEncodingContainer<NestedKey>(
+            let keyedContainer = KeyedObjectEncodingContainer<NestedKey>(
                 referencing: encoder,
-                codingPath: codingPath + [PlistObjectKey(index: index)],
+                codingPath: codingPath + [ObjectKey(index: index)],
                 container: DictionaryContainer(),
                 completion: { [container] in container.replace(at: index, with: $0) })
             return KeyedEncodingContainer(keyedContainer)
@@ -370,9 +370,9 @@ extension PlistObjectEncoder {
             let index = count
             container.append([] as [Any])
             
-            return PlistUnkeyedEncodingContanier(
+            return UnkeyedObjectEncodingContanier(
                 referencing: encoder,
-                codingPath: codingPath + [PlistObjectKey(index: index)],
+                codingPath: codingPath + [ObjectKey(index: index)],
                 container: ArrayContainer(),
                 completion: { [container] in container.replace(at: index, with: $0) })
         }
@@ -382,7 +382,7 @@ extension PlistObjectEncoder {
             container.append("placeholder for superEncoder")
             
             return ReferencingEncoder(
-                referenceCodingPath: codingPath, key: PlistObjectKey(index: index),
+                referenceCodingPath: codingPath, key: ObjectKey(index: index),
                 completion: { [container] in container.replace(at: index, with: $0) })
         }
     }
@@ -390,13 +390,13 @@ extension PlistObjectEncoder {
 
 // MARK: -
 
-extension PlistObjectEncoder {
-    private class PlistSingleValueEncodingContanier: SingleValueEncodingContainer {
-        private let encoder: PlistObjectEncoder
+extension ObjectEncoder {
+    private class SingleValueObjectEncodingContanier: SingleValueEncodingContainer {
+        private let encoder: ObjectEncoder
         
         let codingPath: [CodingKey]
         
-        init(referencing encoder: PlistObjectEncoder, codingPath: [CodingKey]) {
+        init(referencing encoder: ObjectEncoder, codingPath: [CodingKey]) {
             self.encoder = encoder
             self.codingPath = codingPath
         }
