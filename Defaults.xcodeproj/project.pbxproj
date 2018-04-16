@@ -15,12 +15,14 @@
 		7521BA8520479208002920FD /* DefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8420479208002920FD /* DefaultsTests.swift */; };
 		7521BA912047921A002920FD /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8F2047921A002920FD /* Preferences.swift */; };
 		7521BA922047921A002920FD /* BasePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA902047921A002920FD /* BasePreferences.swift */; };
+		756D842E2083316400E110ED /* Temp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756D842D2083316400E110ED /* Temp.swift */; };
 		756EBD83204A6EA200C73FF5 /* NSObject+KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */; };
 		756EBD85205CB09000C73FF5 /* PlistObjectEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD84205CB09000C73FF5 /* PlistObjectEncoder.swift */; };
 		756EBD87205CE6F700C73FF5 /* PlistObjectKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */; };
 		756EBD892066944100C73FF5 /* EncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD882066944100C73FF5 /* EncoderTests.swift */; };
 		756EBD8B2066945B00C73FF5 /* PlistEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */; };
 		756EBD8D2067E43600C73FF5 /* PlistObjectDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8C2067E43600C73FF5 /* PlistObjectDecoder.swift */; };
+		75C6C65A2070BC1C00532E39 /* MyPlist.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75C6C6592070BC1C00532E39 /* MyPlist.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,12 +48,14 @@
 		7521BA8620479208002920FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7521BA8F2047921A002920FD /* Preferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		7521BA902047921A002920FD /* BasePreferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasePreferences.swift; sourceTree = "<group>"; };
+		756D842D2083316400E110ED /* Temp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Temp.swift; sourceTree = "<group>"; };
 		756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+KVO.swift"; sourceTree = "<group>"; };
 		756EBD84205CB09000C73FF5 /* PlistObjectEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistObjectEncoder.swift; sourceTree = "<group>"; };
 		756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistObjectKey.swift; sourceTree = "<group>"; };
 		756EBD882066944100C73FF5 /* EncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderTests.swift; sourceTree = "<group>"; };
 		756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlistEncoder.swift; sourceTree = "<group>"; };
 		756EBD8C2067E43600C73FF5 /* PlistObjectDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistObjectDecoder.swift; sourceTree = "<group>"; };
+		75C6C6592070BC1C00532E39 /* MyPlist.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MyPlist.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,8 +104,10 @@
 				756EBD8C2067E43600C73FF5 /* PlistObjectDecoder.swift */,
 				756EBD86205CE6F700C73FF5 /* PlistObjectKey.swift */,
 				7521BA902047921A002920FD /* BasePreferences.swift */,
+				756D842D2083316400E110ED /* Temp.swift */,
 				7521BA8F2047921A002920FD /* Preferences.swift */,
 				756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */,
+				75C6C6592070BC1C00532E39 /* MyPlist.plist */,
 				7521BA7320479208002920FD /* Main.storyboard */,
 				7521BA7620479208002920FD /* Assets.xcassets */,
 				7521BA7820479208002920FD /* LaunchScreen.storyboard */,
@@ -204,6 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7521BA7A20479208002920FD /* LaunchScreen.storyboard in Resources */,
+				75C6C65A2070BC1C00532E39 /* MyPlist.plist in Resources */,
 				7521BA7720479208002920FD /* Assets.xcassets in Resources */,
 				7521BA7520479208002920FD /* Main.storyboard in Resources */,
 			);
@@ -230,6 +237,7 @@
 				756EBD87205CE6F700C73FF5 /* PlistObjectKey.swift in Sources */,
 				7521BA922047921A002920FD /* BasePreferences.swift in Sources */,
 				7521BA7020479207002920FD /* AppDelegate.swift in Sources */,
+				756D842E2083316400E110ED /* Temp.swift in Sources */,
 				756EBD85205CB09000C73FF5 /* PlistObjectEncoder.swift in Sources */,
 				7521BA912047921A002920FD /* Preferences.swift in Sources */,
 			);

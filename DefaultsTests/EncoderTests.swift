@@ -33,17 +33,21 @@ extension MyRect {
     }
 }
 
-class Animal: Codable {
+class Animal: Codable, CustomStringConvertible {
     var name: String = ""
     var legCount: Int = 2
     var friends: [String] = []
     var fileURL: URL = URL(fileURLWithPath: "/path/to/file")
+    
+    var description: String {
+        return "name: \(name), legCount: \(legCount), friends: \(friends), fileURL: \(fileURL)"
+    }
 }
 
 class Dog: Animal {
     var frame: MyRect = MyRect(x: 0, y: 0, width: 10, height: 10)
     var age: Int = 0
-    var stringURL: Int? = nil//URL(string: "http://google.com")
+    var stringURL: URL? = URL(string: "http://google.com")
     
     enum CodingKeys : CodingKey {
         case frame
@@ -72,6 +76,10 @@ class Dog: Animal {
         frame = try container.decode(MyRect.self, forKey: .frame)
         age = try container.decode(Int.self, forKey: .age)
         try super.init(from: container.superDecoder())
+    }
+    
+    override var description: String {
+        return super.description + ", frame: \(frame), age: \(age), stringURL: \(String(describing: stringURL))"
     }
 }
 
@@ -114,5 +122,10 @@ class EncoderTests: XCTestCase {
         
         let ret = try! encoder.encode(dog) as! [String: Any]
         print(ret)
+        
+        let decoder = PlistObjectDecoder()
+        let dog2 = try! decoder.decode(type: Dog.self, from: ret)
+        print("dog1", dog)
+        print("dog2", dog2)
     }
 }

@@ -22,7 +22,7 @@ public class PlistObjectDecoder: Decoder {
         keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         
         if let string = storage.topContainer as? String, string == nilSymbol {
-            let desc = "Cannot get keyed decoding container -- found null value instead."
+            let desc = "Cannot get keyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(KeyedDecodingContainer<Key>.self, context)
         }
@@ -39,7 +39,7 @@ public class PlistObjectDecoder: Decoder {
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
         if let string = storage.topContainer as? String, string == nilSymbol {
-            let desc = "Cannot get unkeyed decoding container -- found null value instead."
+            let desc = "Cannot get unkeyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
         }
@@ -82,14 +82,14 @@ extension PlistObjectDecoder {
 }
 
 extension PlistObjectDecoder {
-    public func decodeValue(of type: Decodable.Type, from value: Any) throws -> Any {
+    public func decodeValue(of type: Decodable.Type, from object: Any) throws -> Any {
         defer { cleanup() }
         
-        if Swift.type(of: value) == type {
-            return value
+        if Swift.type(of: object) == type {
+            return object
         }
         
-        storage.pushContainer(value)
+        storage.pushContainer(object)
         defer { storage.popContainer() }
         
         return try type.init(from: self)
@@ -255,7 +255,7 @@ extension PlistObjectDecoder {
             
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get nested keyed container -- "
-                    + "no value found for key \"\(key.stringValue)\""
+                    + "no value found for key \"\(key.stringValue)\"."
                 let context = DecodingError.Context(codingPath: nestedCodingPath,
                                                     debugDescription: desc)
                 throw DecodingError.valueNotFound(KeyedDecodingContainer<NestedKey>.self, context)
@@ -276,7 +276,7 @@ extension PlistObjectDecoder {
             
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get nested unkeyed container -- "
-                    + "no value found for key \"\(key.stringValue)\""
+                    + "no value found for key \"\(key.stringValue)\"."
                 let context = DecodingError.Context(codingPath: nestedCodingPath,
                                                     debugDescription: desc)
                 throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
@@ -304,7 +304,7 @@ extension PlistObjectDecoder {
             
             guard let value = container[key.stringValue] else {
                 let desc = "Cannot get superDecoder() -- "
-                    + "no value found for key \"\(key.stringValue)\""
+                    + "no value found for key \"\(key.stringValue)\"."
                 let context = DecodingError.Context(codingPath: superCodingPath,
                                                     debugDescription: desc)
                 throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
@@ -629,7 +629,7 @@ private enum Error {
     static func valueNotFound(
         codingPath: [CodingKey], expectation: Any.Type) -> DecodingError {
         
-        let desc = "Expected \(expectation) value but found null instead."
+        let desc = "Expected \(expectation) value but found nil instead."
         let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
         return DecodingError.valueNotFound(expectation, context)
     }

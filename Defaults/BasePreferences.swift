@@ -1,8 +1,11 @@
 
 import Foundation
 
-// Inspired by https://gist.github.com/macmade/0824d91b1f3a3b095057a40742d50a03
+// Inspired by:
+// https://github.com/mikeash/TSUD
+// https://gist.github.com/macmade/0824d91b1f3a3b095057a40742d50a03
 
+// 필요없어짐
 public protocol SubPreferences: NSObjectProtocol {}
 
 open class BasePreferences: NSObject {
@@ -30,6 +33,7 @@ open class BasePreferences: NSObject {
         
     }
     
+    // 필요없어짐
     public func migrateValueForKeyPath(from oldKeyPath: String, to newKeyPath: String) {
         guard let value = userDefaults.object(forKey: oldKeyPath) else { return }
         userDefaults.removeObject(forKey: oldKeyPath)
