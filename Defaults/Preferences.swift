@@ -1,7 +1,7 @@
 
 import Foundation
 
-enum ColorType: Int {
+enum ColorType: Int, Codable {
     case red
     case blue
     case green

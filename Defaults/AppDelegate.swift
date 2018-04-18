@@ -8,72 +8,40 @@
 
 import UIKit
 
-class MyView: UIView {
-    deinit {
-        print("deinit view")
-    }
-}
-
-class Hello: NSObject {
-    @objc var arr: [Int] = [1, 2, 3]
-}
-
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    var view: MyView!
     var window: UIWindow?
-    var kvoItems: [KVOItem] = []
-    var item: DispatchWorkItem?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        let workItem = DispatchWorkItem {
-            print("execute work item")
-        }
-        workItem.notify(queue: DispatchQueue.main) {
-            print("notify work item")
-        }
-//        workItem.cancel()
-//        self.item = workItem
-        DispatchQueue.main.async(execute: workItem)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
-//        DispatchQueue.main.async(execute: workItem)
-        
         print(NSTemporaryDirectory())
-        view = MyView()
         
-        kvoItems += [
-            view.observe(keyPath: #keyPath(UIView.frame)) { (view, change: KVOChange<CGRect>) in
-                guard let newFrame: CGRect = change.newValue else { return }
-                print(newFrame)
-            },
-            view.observe(keyPath: #keyPath(UIView.frame)) { (view, change) in
-                guard let newFrame: CGRect = change.newValue as? CGRect else { return }
-                print(newFrame)
-            }
-        ]
-        
-        let hello = Hello()
-        kvoItems.append(hello.observe(keyPath: "arr") { (hello, change: KVOChange<[Int]>) in
-            print(change)
-        })
-        let arr = hello.mutableArrayValue(forKey: "arr")
-        arr.add(4)
-        arr.removeObject(at: 1)
-        
-        view.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
-//        view = nil
-        view.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        kvoItems.removeAll()
-//        view.hello()
-        view.frame = CGRect(x: 0, y: 0, width: 20, height: 20)
-        view = nil
-        
-//        sample()
+        sample2()
         
         return true
+    }
+    
+    func sample2() {
+        let pref = MyPreferences.shared
+        
+        func printPref() {
+            print("=============")
+            print(pref.num)
+            print(pref.str)
+            print(pref.num2)
+            print(pref.color)
+            print("=============")
+        }
+        
+        printPref()
+        
+        pref.num = 111111
+        pref.str = "world"
+        pref.num2 = nil
+        pref.color = .green
+        
+        printPref()
     }
     
     func sample() {
@@ -114,7 +82,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         pref.optIntValue = 8
         pref.optStringValue = nil
         pref.optIntValue = nil
-        pref.colorTypeValue = .yellow
+//        pref.colorTypeValue = .yellow
         pref.subInfo.number = 88
         pref.subInfo.title = "hungry"
         
