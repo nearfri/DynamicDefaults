@@ -37,7 +37,7 @@ open class BasePreferences3 {
         }
         
         switch value {
-        case is NSNumber, is String:
+        case is NSNumber, is String, is Data, is Date:
             return value
         default:
             return try ObjectEncoder().encode(value)
@@ -46,12 +46,37 @@ open class BasePreferences3 {
 }
 
 class MyPreferences: BasePreferences3, Codable {
-    static let shared: MyPreferences = try! BasePreferences3.instantiate(MyPreferences.self)
+    static let `default`: MyPreferences = try! BasePreferences3.instantiate(MyPreferences.self)
     
     var num: Int = 3 { didSet { store(num) } }
+    
     var str: String = "hello" { didSet { store(str) } }
+    
     var num2: Int? = 4 { didSet { store(num2) } }
+    
     var color: ColorType = .blue { didSet { store(color) } }
+    
+    var num3: Double = 5 { didSet { store(num3) } }
+    
+    var rect: MyRect = .init(origin: .init(x: 1, y: 2), size: .init(width: 3, height: 4)) {
+        didSet { store(rect) }
+    }
+}
+
+
+struct MyPoint: Codable {
+    var x: Float = 0
+    var y: Float = 0
+}
+
+struct MySize: Codable {
+    var width: Float = 0
+    var height: Float = 0
+}
+
+struct MyRect: Codable {
+    var origin: MyPoint = MyPoint(x: 0, y: 0)
+    var size: MySize = MySize(width: 0, height: 0)
 }
 
 

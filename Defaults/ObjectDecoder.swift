@@ -663,70 +663,72 @@ extension InitializableWithAny where Self: InitializableWithNumeric {
         
         switch value {
         case let num as Int:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Int8:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Int16:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Int32:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Int64:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as UInt:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as UInt8:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as UInt16:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as UInt32:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as UInt64:
-            guard let exactNum = Self(exactly: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Float:
-            guard let exactNum = Self(equalTo: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
         case let num as Double:
-            guard let exactNum = Self(equalTo: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
+            #if os(macOS)
         case let num as Float80:
             guard let exactNum = Self(equalTo: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
+            #endif
         default:
             throw Error.typeMismatch(codingPath: codingPath, expectation: type, reality: value)
         }
@@ -769,12 +771,16 @@ extension String: InitializableWithAny {
 // MARK: -
 
 private protocol InitializableWithNumeric {
-    init?<T>(exactly source: T) where T: BinaryInteger
-    init?<T>(equalTo source: T) where T: BinaryFloatingPoint
+    init?<T>(precisely source: T) where T: BinaryInteger
+    init?<T>(precisely source: T) where T: BinaryFloatingPoint
 }
 
 extension InitializableWithNumeric where Self: BinaryInteger {
-    fileprivate init?<T>(equalTo source: T) where T: BinaryFloatingPoint {
+    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
+        self.init(exactly: source)
+    }
+    
+    fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
         self.init(exactly: source)
     }
 }
@@ -791,7 +797,46 @@ extension UInt32: InitializableWithNumeric {}
 extension UInt64: InitializableWithNumeric {}
 
 extension Float: InitializableWithNumeric {
-    fileprivate init?<T>(equalTo source: T) where T: BinaryFloatingPoint {
+    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
+        // Generic 버전은 실제로는 구현이 없는 것 같다. 그래서 타입 별로 일일이 구현해야 한다.
+        // https://github.com/apple/swift/blob/master/stdlib/public/core/FloatingPointTypes.swift.gyb
+        switch source {
+        case let value as Int:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int8:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int16:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int32:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int64:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt8:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt16:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt32:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt64:
+            guard let exactValue = Float(exactly: value) else { return nil }
+            self = exactValue
+        default:
+            preconditionFailure("\(type(of: source)) type is not supported.")
+        }
+    }
+    
+    fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
         switch source {
         case let value as Float:
             self = value
@@ -803,6 +848,7 @@ extension Float: InitializableWithNumeric {
             } else {
                 return nil
             }
+            #if os(macOS)
         case let value as Float80:
             if value.isNaN {
                 self = Float.nan
@@ -811,6 +857,7 @@ extension Float: InitializableWithNumeric {
             } else {
                 return nil
             }
+            #endif
         default:
             preconditionFailure("\(type(of: source)) type is not supported.")
         }
@@ -818,12 +865,50 @@ extension Float: InitializableWithNumeric {
 }
 
 extension Double: InitializableWithNumeric {
-    fileprivate init?<T>(equalTo source: T) where T: BinaryFloatingPoint {
+    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
+        switch source {
+        case let value as Int:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int8:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int16:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int32:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as Int64:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt8:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt16:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt32:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        case let value as UInt64:
+            guard let exactValue = Double(exactly: value) else { return nil }
+            self = exactValue
+        default:
+            preconditionFailure("\(type(of: source)) type is not supported.")
+        }
+    }
+    
+    fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
         switch source {
         case let value as Float:
             self = Double(value)
         case let value as Double:
             self = value
+            #if os(macOS)
         case let value as Float80:
             if value.isNaN {
                 self = Double.nan
@@ -832,6 +917,7 @@ extension Double: InitializableWithNumeric {
             } else {
                 return nil
             }
+            #endif
         default:
             preconditionFailure("\(type(of: source)) type is not supported.")
         }

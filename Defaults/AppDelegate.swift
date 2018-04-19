@@ -23,14 +23,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func sample2() {
-        let pref = MyPreferences.shared
+        let pref = MyPreferences.default
         
         func printPref() {
             print("=============")
             print(pref.num)
             print(pref.str)
             print(pref.num2)
+            print(pref.num3)
             print(pref.color)
+            print(pref.rect)
             print("=============")
         }
         
@@ -38,8 +40,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         pref.num = 111111
         pref.str = "world"
-        pref.num2 = nil
+        pref.num2 = 987
+        pref.num3 = 8888
         pref.color = .green
+        pref.rect = MyRect(origin: MyPoint(x: 1, y: 2), size: MySize(width: 30, height: 40))
         
         printPref()
     }
