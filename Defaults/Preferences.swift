@@ -1,7 +1,8 @@
 
 import Foundation
+import CoreGraphics
 
-enum ColorType: Int, Codable {
+enum ColorType: String, Codable {
     case red
     case blue
     case green
@@ -10,55 +11,29 @@ enum ColorType: Int, Codable {
     case yellow
 }
 
-class SubInfo: NSObject, SubPreferences {
-    @objc dynamic var number: Int = 8
-    @objc dynamic var title: String = "magnet"
-}
-
-class Preferences: BasePreferences {
-    static let shared: Preferences = Preferences()
+class Preferences: BasePreferences, Codable {
+    static let `default`: Preferences = {
+        let userDefaults = UserDefaults(suiteName: "AppPreferences")!
+        return try! BasePreferences.instantiate(Preferences.self, userDefaults: userDefaults)
+    }()
     
-    @objc dynamic var intValue: Int = 3
-    @objc dynamic var doubleValue: Double = 4
-    @objc dynamic var floatValue: Float = 5
-    @objc dynamic var boolValue: Bool = true
-    @objc dynamic var stringValue: String = "hello"
-    @objc dynamic var intArrayValue: [Int] = [1, 2, 3, 4, 5]
-    @objc dynamic var stringArrayValue: [String] = ["hello", "world"]
-    @objc dynamic var dataValue: Data = Data(count: 10)
-    @objc dynamic var dateValue: Date = Date(timeIntervalSinceReferenceDate: 20)
+    var num: Int = 3 { didSet { store(num) } }
     
-    var urlValue: URL {
-        get { return URL(string: rawURLValue)! }
-        set { rawURLValue = newValue.absoluteString }
-    }
-    @objc private dynamic var rawURLValue: String = "http://google.com"
+    var str: String = "hello" { didSet { store(str) } }
     
-    var fileURLValue: URL {
-        get { return URL(fileURLWithPath: rawFileURLValue) }
-        set { rawFileURLValue = newValue.path }
-    }
-    @objc private dynamic var rawFileURLValue: String = "/path/to/file"
+    var num2: Int? = 4 { didSet { store(num2) } }
     
-    @objc dynamic var optStringValue: String? = nil
+    var color: ColorType = .blue { didSet { store(color) } }
     
-    var optIntValue: Int? {
-        get { return rawOptIntValue?.intValue }
-        set { rawOptIntValue = newValue.map({ NSNumber(value: $0) }) }
-    }
-    @objc private dynamic var rawOptIntValue: NSNumber? = nil
+    var num3: Double = 5 { didSet { store(num3) } }
     
-    var colorTypeValue: ColorType {
-        get { return ColorType(rawValue: rawColorTypeValue)! }
-        set { rawColorTypeValue = newValue.rawValue }
-    }
-    @objc private dynamic var rawColorTypeValue: Int = ColorType.blue.rawValue
+    var rect: CGRect = CGRect(x: 1, y: 2, width: 3, height: 4) { didSet { store(rect) } }
     
-    @objc dynamic var subInfo: SubInfo = SubInfo()
+    var colors: [ColorType] = [.blue, .black, .green] { didSet { store(colors) } }
     
-    override func migrateUserDefaults(_ userDefaults: UserDefaults) {
-        migrateValueForKeyPath(from: "oldIntValue", to: #keyPath(intValue))
-    }
+    var creationDate: Date = Date() { didSet { store(creationDate) } }
+    
+    var isItReal: Bool = false { didSet { store(isItReal) } }
 }
 
 

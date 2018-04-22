@@ -1,10 +1,3 @@
-//
-//  EncoderTests.swift
-//  DefaultsTests
-//
-//  Created by Ukjeong Lee on 2018. 3. 24..
-//  Copyright © 2018년 Ukjeong Lee. All rights reserved.
-//
 
 import XCTest
 @testable import Defaults

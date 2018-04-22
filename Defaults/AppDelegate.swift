@@ -23,16 +23,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func sample2() {
-        let pref = MyPreferences.default
+        let pref = Preferences.default
         
         func printPref() {
             print("=============")
             print(pref.num)
             print(pref.str)
-            print(pref.num2)
+            print(pref.num2 ?? "nil")
             print(pref.num3)
             print(pref.color)
             print(pref.rect)
+            print(pref.colors)
+            print(pref.creationDate)
+            print(pref.isItReal)
             print("=============")
         }
         
@@ -40,59 +43,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         pref.num = 111111
         pref.str = "world"
-        pref.num2 = 987
+        pref.num2 = nil
         pref.num3 = 8888
         pref.color = .green
-        pref.rect = MyRect(origin: MyPoint(x: 1, y: 2), size: MySize(width: 30, height: 40))
+        pref.rect = CGRect(x: 1, y: 2, width: 30, height: 40)
+        pref.colors = [.blue, .black, .red]
+        pref.creationDate = Date()
+        pref.isItReal = true
         
         printPref()
     }
     
-    func sample() {
-        let pref = Preferences.shared
-        
-        print(pref.persistentKeyPaths)
-        
-        func printPref() {
-            print(pref.intValue)
-            print(pref.doubleValue)
-            print(pref.floatValue)
-            print(pref.boolValue)
-            print(pref.stringValue)
-            print(pref.intArrayValue)
-            print(pref.stringArrayValue)
-            print(pref.dataValue)
-            print(pref.dateValue)
-            print(pref.urlValue)
-            print(pref.fileURLValue)
-            print(pref.subInfo.number)
-            print(pref.subInfo.title)
-        }
-        
-        printPref()
-        
-        pref.intValue = 1
-        pref.doubleValue = 2
-        pref.floatValue = 3
-        pref.boolValue = false
-        pref.stringValue = "world"
-        pref.intArrayValue = [10, 11, 12]
-        pref.stringArrayValue = ["swift", "work"]
-        pref.dataValue = Data(count: 20)
-        pref.dateValue = Date()
-        pref.urlValue = URL(string: "http://hello.com")!
-        pref.fileURLValue = URL(fileURLWithPath: "/new/url/string")
-        pref.optStringValue = "wow"
-        pref.optIntValue = 8
-        pref.optStringValue = nil
-        pref.optIntValue = nil
-//        pref.colorTypeValue = .yellow
-        pref.subInfo.number = 88
-        pref.subInfo.title = "hungry"
-        
-        printPref()
-    }
-
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
