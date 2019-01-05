@@ -1,7 +1,7 @@
 
 import Foundation
 
-// ref.: https://github.com/apple/swift/blob/master/stdlib/public/SDK/Foundation/PlistEncoder.swift
+// ref.: https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/PlistEncoder.swift
 
 public class ObjectEncoder: Encoder {
     public private(set) var codingPath: [CodingKey]

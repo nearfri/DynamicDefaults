@@ -12,14 +12,13 @@
 		7521BA7520479208002920FD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7521BA7320479208002920FD /* Main.storyboard */; };
 		7521BA7720479208002920FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7521BA7620479208002920FD /* Assets.xcassets */; };
 		7521BA7A20479208002920FD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7521BA7820479208002920FD /* LaunchScreen.storyboard */; };
-		7521BA8520479208002920FD /* DefaultsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8420479208002920FD /* DefaultsTests.swift */; };
+		7521BA8520479208002920FD /* BasePreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8420479208002920FD /* BasePreferencesTests.swift */; };
 		7521BA912047921A002920FD /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA8F2047921A002920FD /* Preferences.swift */; };
 		7521BA922047921A002920FD /* BasePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7521BA902047921A002920FD /* BasePreferences.swift */; };
-		756EBD83204A6EA200C73FF5 /* NSObject+KVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */; };
 		756EBD85205CB09000C73FF5 /* ObjectEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD84205CB09000C73FF5 /* ObjectEncoder.swift */; };
 		756EBD87205CE6F700C73FF5 /* ObjectKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD86205CE6F700C73FF5 /* ObjectKey.swift */; };
-		756EBD892066944100C73FF5 /* EncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD882066944100C73FF5 /* EncoderTests.swift */; };
-		756EBD8B2066945B00C73FF5 /* PlistEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */; };
+		756EBD892066944100C73FF5 /* ObjectCoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD882066944100C73FF5 /* ObjectCoderTests.swift */; };
+		756EBD8B2066945B00C73FF5 /* PlistEncoder_old.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8A2066945B00C73FF5 /* PlistEncoder_old.swift */; };
 		756EBD8D2067E43600C73FF5 /* ObjectDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD8C2067E43600C73FF5 /* ObjectDecoder.swift */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		082A609521DF205400159245 /* PlistEncoder_new.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistEncoder_new.swift; sourceTree = "<group>"; };
 		7521BA6C20479207002920FD /* Defaults.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Defaults.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7521BA6F20479207002920FD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7521BA7120479208002920FD /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -42,15 +42,14 @@
 		7521BA7920479208002920FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7521BA7B20479208002920FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7521BA8020479208002920FD /* DefaultsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DefaultsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7521BA8420479208002920FD /* DefaultsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsTests.swift; sourceTree = "<group>"; };
+		7521BA8420479208002920FD /* BasePreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePreferencesTests.swift; sourceTree = "<group>"; };
 		7521BA8620479208002920FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7521BA8F2047921A002920FD /* Preferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		7521BA902047921A002920FD /* BasePreferences.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasePreferences.swift; sourceTree = "<group>"; };
-		756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSObject+KVO.swift"; sourceTree = "<group>"; };
 		756EBD84205CB09000C73FF5 /* ObjectEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectEncoder.swift; sourceTree = "<group>"; };
 		756EBD86205CE6F700C73FF5 /* ObjectKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectKey.swift; sourceTree = "<group>"; };
-		756EBD882066944100C73FF5 /* EncoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncoderTests.swift; sourceTree = "<group>"; };
-		756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlistEncoder.swift; sourceTree = "<group>"; };
+		756EBD882066944100C73FF5 /* ObjectCoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectCoderTests.swift; sourceTree = "<group>"; };
+		756EBD8A2066945B00C73FF5 /* PlistEncoder_old.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlistEncoder_old.swift; sourceTree = "<group>"; };
 		756EBD8C2067E43600C73FF5 /* ObjectDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDecoder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -95,13 +94,13 @@
 			children = (
 				7521BA6F20479207002920FD /* AppDelegate.swift */,
 				7521BA7120479208002920FD /* ViewController.swift */,
-				756EBD82204A6EA200C73FF5 /* NSObject+KVO.swift */,
 				756EBD84205CB09000C73FF5 /* ObjectEncoder.swift */,
 				756EBD8C2067E43600C73FF5 /* ObjectDecoder.swift */,
 				756EBD86205CE6F700C73FF5 /* ObjectKey.swift */,
 				7521BA902047921A002920FD /* BasePreferences.swift */,
 				7521BA8F2047921A002920FD /* Preferences.swift */,
-				756EBD8A2066945B00C73FF5 /* PlistEncoder.swift */,
+				756EBD8A2066945B00C73FF5 /* PlistEncoder_old.swift */,
+				082A609521DF205400159245 /* PlistEncoder_new.swift */,
 				7521BA7320479208002920FD /* Main.storyboard */,
 				7521BA7620479208002920FD /* Assets.xcassets */,
 				7521BA7820479208002920FD /* LaunchScreen.storyboard */,
@@ -113,8 +112,8 @@
 		7521BA8320479208002920FD /* DefaultsTests */ = {
 			isa = PBXGroup;
 			children = (
-				7521BA8420479208002920FD /* DefaultsTests.swift */,
-				756EBD882066944100C73FF5 /* EncoderTests.swift */,
+				756EBD882066944100C73FF5 /* ObjectCoderTests.swift */,
+				7521BA8420479208002920FD /* BasePreferencesTests.swift */,
 				7521BA8620479208002920FD /* Info.plist */,
 			);
 			path = DefaultsTests;
@@ -223,8 +222,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				756EBD83204A6EA200C73FF5 /* NSObject+KVO.swift in Sources */,
-				756EBD8B2066945B00C73FF5 /* PlistEncoder.swift in Sources */,
+				756EBD8B2066945B00C73FF5 /* PlistEncoder_old.swift in Sources */,
 				756EBD8D2067E43600C73FF5 /* ObjectDecoder.swift in Sources */,
 				7521BA7220479208002920FD /* ViewController.swift in Sources */,
 				756EBD87205CE6F700C73FF5 /* ObjectKey.swift in Sources */,
@@ -239,8 +237,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				756EBD892066944100C73FF5 /* EncoderTests.swift in Sources */,
-				7521BA8520479208002920FD /* DefaultsTests.swift in Sources */,
+				756EBD892066944100C73FF5 /* ObjectCoderTests.swift in Sources */,
+				7521BA8520479208002920FD /* BasePreferencesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

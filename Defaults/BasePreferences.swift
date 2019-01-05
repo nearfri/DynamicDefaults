@@ -2,11 +2,11 @@
 import Foundation
 
 open class BasePreferences {
-    private(set) var userDefaults: UserDefaults = .standard
+    internal private(set) var userDefaults: UserDefaults = .standard
     
     public required init() {}
     
-    static func instantiate<T: BasePreferences>(
+    public static func instantiate<T: BasePreferences>(
         _ type: T.Type, userDefaults: UserDefaults = .standard) throws -> T where T: Codable {
         
         guard let defaultValues = try ObjectEncoder().encode(T.init()) as? [String: Any] else {

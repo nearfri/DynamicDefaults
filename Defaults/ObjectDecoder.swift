@@ -1,7 +1,7 @@
 
 import Foundation
 
-// ref.: https://github.com/apple/swift/blob/master/stdlib/public/SDK/Foundation/PlistEncoder.swift
+// ref.: https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/PlistEncoder.swift
 
 public class ObjectDecoder: Decoder {
     public private(set) var codingPath: [CodingKey]
@@ -770,6 +770,9 @@ extension String: InitializableWithAny {
 
 // MARK: -
 
+// TODO: Xcode 10부터 init?<Source>(exactly: Source)가 지원된다. 이걸 바로 써도 되는지 확인해볼 것.
+// NaN 처리 때문에 안 될 것 같다. JSONDecoder를 참고하면 될 듯
+// https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
 private protocol InitializableWithNumeric {
     init?<T>(precisely source: T) where T: BinaryInteger
     init?<T>(precisely source: T) where T: BinaryFloatingPoint
@@ -800,6 +803,8 @@ extension Float: InitializableWithNumeric {
     fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
         // Generic 버전은 실제로는 구현이 없는 것 같다. 그래서 타입 별로 일일이 구현해야 한다.
         // https://github.com/apple/swift/blob/master/stdlib/public/core/FloatingPointTypes.swift.gyb
+        // TODO: 2018.10.01에 수정된 거 같다. generic 버전이 잘 되는지 검증이 필요하다.
+        // https://github.com/apple/swift/commit/0707ca6dacdb40cfbfeb1bee532a5802cd973655
         switch source {
         case let value as Int:
             guard let exactValue = Float(exactly: value) else { return nil }
@@ -837,6 +842,7 @@ extension Float: InitializableWithNumeric {
     }
     
     fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
+        // TODO: Xcode 10부터 generic으로 초기화하는게 지원되는 것 같다. 검증 후 적용 필요.
         switch source {
         case let value as Float:
             self = value

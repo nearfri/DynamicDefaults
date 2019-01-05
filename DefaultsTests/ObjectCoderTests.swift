@@ -2,8 +2,7 @@
 import XCTest
 @testable import Defaults
 
-class DefaultsTests: XCTestCase {
-    var pref: Preferences!
+class ObjectCoderTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
@@ -14,10 +13,7 @@ class DefaultsTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func removeAll(userDefaults: UserDefaults = .standard) {
-        for (key, _) in userDefaults.dictionaryRepresentation() {
-            userDefaults.removeObject(forKey: key)
-        }
-    }
 }
+
+
+
