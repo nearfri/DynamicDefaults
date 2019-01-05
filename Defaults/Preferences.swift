@@ -14,7 +14,7 @@ enum ColorType: String, Codable {
 class Preferences: BasePreferences, Codable {
     static let `default`: Preferences = {
         let userDefaults = UserDefaults(suiteName: "AppPreferences")!
-        return try! BasePreferences.instantiate(Preferences.self, userDefaults: userDefaults)
+        return BasePreferences.instantiate(Preferences.self, userDefaults: userDefaults)
     }()
     
     var num: Int = 3 { didSet { store(num) } }

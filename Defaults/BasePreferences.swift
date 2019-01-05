@@ -7,19 +7,23 @@ open class BasePreferences {
     public required init() {}
     
     public static func instantiate<T: BasePreferences>(
-        _ type: T.Type, userDefaults: UserDefaults = .standard) throws -> T where T: Codable {
+        _ type: T.Type, userDefaults: UserDefaults = .standard) -> T where T: Codable {
         
-        guard let defaultValues = try ObjectEncoder().encode(T.init()) as? [String: Any] else {
-            preconditionFailure("Expected to encode \"\(type)\" as dictionary, but it was not.")
+        do {
+            guard let defaultValues = try ObjectEncoder().encode(T.init()) as? [String: Any] else {
+                preconditionFailure("Expected to encode \"\(type)\" as dictionary, but it was not.")
+            }
+            userDefaults.register(defaults: defaultValues)
+            
+            let storedValues = userDefaults.dictionaryRepresentation()
+            let result = try ObjectDecoder().decode(type, from: storedValues)
+            
+            result.userDefaults = userDefaults
+            
+            return result
+        } catch {
+            preconditionFailure("Failed to encode \"\(type)\" -- \(error)")
         }
-        userDefaults.register(defaults: defaultValues)
-        
-        let storedValues = userDefaults.dictionaryRepresentation()
-        let result = try ObjectDecoder().decode(type, from: storedValues)
-        
-        result.userDefaults = userDefaults
-        
-        return result
     }
     
     public func store<T: Encodable>(_ value: T?, forKey key: String = #function) {
