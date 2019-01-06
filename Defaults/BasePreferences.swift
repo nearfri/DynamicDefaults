@@ -11,7 +11,7 @@ open class BasePreferences {
         
         do {
             guard let defaultValues = try ObjectEncoder().encode(T.init()) as? [String: Any] else {
-                preconditionFailure("Expected to encode \"\(type)\" as dictionary, but it was not.")
+                preconditionFailure("Expected to encode \(type) as dictionary, but it was not.")
             }
             userDefaults.register(defaults: defaultValues)
             
@@ -22,7 +22,7 @@ open class BasePreferences {
             
             return result
         } catch {
-            preconditionFailure("Failed to encode \"\(type)\" -- \(error)")
+            preconditionFailure("Failed to encode \(type): \(error)")
         }
     }
     
@@ -30,7 +30,7 @@ open class BasePreferences {
         do {
             userDefaults.set(try encode(value), forKey: key)
         } catch {
-            preconditionFailure("Failed to encode value for key \"\(key)\" -- \(error)")
+            preconditionFailure("Failed to encode value for key \"\(key)\": \(error)")
         }
     }
     
