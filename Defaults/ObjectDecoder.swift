@@ -64,6 +64,20 @@ extension ObjectDecoder {
         return try unbox(value, as: type)
     }
     
+    // ObjectEncoder.encodeValue()와 마찬가지 이유로 type-erased 구현은 공개하지 않는다.
+    private func decodeValue(of type: Decodable.Type, from object: Any) throws -> Any {
+        defer { cleanup() }
+        
+        if Swift.type(of: object) == type {
+            return object
+        }
+        
+        storage.pushContainer(object)
+        defer { storage.popContainer() }
+        
+        return try type.init(from: self)
+    }
+    
     private func cleanup() {
         codingPath.removeAll()
         storage.removeAll()
@@ -78,21 +92,6 @@ extension ObjectDecoder {
         defer { storage.popContainer() }
         
         return try T(from: self)
-    }
-}
-
-extension ObjectDecoder {
-    public func decodeValue(of type: Decodable.Type, from object: Any) throws -> Any {
-        defer { cleanup() }
-        
-        if Swift.type(of: object) == type {
-            return object
-        }
-        
-        storage.pushContainer(object)
-        defer { storage.popContainer() }
-        
-        return try type.init(from: self)
     }
 }
 

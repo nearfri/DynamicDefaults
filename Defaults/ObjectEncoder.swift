@@ -152,7 +152,7 @@ extension ObjectEncoder {
     }
     
     private class AnyContainer: ObjectContainer {
-        var object: Any
+        private(set) var object: Any
         
         init(object: Any) {
             self.object = object

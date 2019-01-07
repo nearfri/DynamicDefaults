@@ -7,11 +7,9 @@ import XCTest
 class ObjectCoderTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
     
@@ -47,9 +45,10 @@ class ObjectCoderTests: XCTestCase {
                            "Encoded value is not identical to expected value.",
                            file: file, line: line)
         } else {
-            XCTFail("(\"\(String(describing: encodedValue))\") is not equal to "
-                + "(\"\(expectedEncodedValue)\") "
-                + "- Encoded value is not identical to expected value.", file: file, line: line)
+            XCTFail("""
+                ("\(String(describing: encodedValue))") is not equal to \
+                ("\(expectedEncodedValue)") - Encoded value is not identical to expected value.
+                """, file: file, line: line)
         }
         
         do {
@@ -71,6 +70,80 @@ class ObjectCoderTests: XCTestCase {
         static func == (_ lhs: EmptyClass, _ rhs: EmptyClass) -> Bool {
             return true
         }
+    }
+    
+    // MARK: - Encoding Top-Level Standard Types
+    
+    func testEncodingTopLevelBool() {
+        testRoundTrip(of: true, expectedEncodedValue: true)
+        testRoundTrip(of: false, expectedEncodedValue: false)
+    }
+    
+    func testEncodingTopLevelInteger() {
+        testFixedWidthInteger(type: Int.self)
+        testFixedWidthInteger(type: Int8.self)
+        testFixedWidthInteger(type: Int16.self)
+        testFixedWidthInteger(type: Int32.self)
+        testFixedWidthInteger(type: Int64.self)
+        testFixedWidthInteger(type: UInt.self)
+        testFixedWidthInteger(type: UInt8.self)
+        testFixedWidthInteger(type: UInt16.self)
+        testFixedWidthInteger(type: UInt32.self)
+        testFixedWidthInteger(type: UInt64.self)
+    }
+    
+    private func testFixedWidthInteger<T>(
+        type: T.Type, file: StaticString = #file, line: UInt = #line
+        ) where T: FixedWidthInteger & Codable {
+        
+        testRoundTrip(of: type.min, expectedEncodedValue: type.min, file: file, line: line)
+        testRoundTrip(of: type.max, expectedEncodedValue: type.max, file: file, line: line)
+    }
+    
+    func testEncodingTopLevelFloatingPoint() {
+        testFloatingPoint(type: Float.self)
+        testFloatingPoint(type: Double.self)
+    }
+    
+    private func testFloatingPoint<T>(
+        type: T.Type, file: StaticString = #file, line: UInt = #line
+        ) where T: FloatingPoint & Codable {
+        
+        testRoundTrip(of: type.leastNormalMagnitude,
+                      expectedEncodedValue: type.leastNormalMagnitude,
+                      file: file, line: line)
+        testRoundTrip(of: type.greatestFiniteMagnitude,
+                      expectedEncodedValue: type.greatestFiniteMagnitude,
+                      file: file, line: line)
+        testRoundTrip(of: type.infinity,
+                      expectedEncodedValue: type.infinity,
+                      file: file, line: line)
+    }
+    
+    func testEncodingTopLevelString() {
+        let string = "Hello Encoder"
+        testRoundTrip(of: string, expectedEncodedValue: string)
+    }
+    
+    func testEncodingTopLevelNil() {
+        let nilValue: Int? = nil
+        let nilSymbol = ObjectEncoder.Constant.defaultNilSymbol
+        testRoundTrip(of: nilValue, expectedEncodedValue: nilSymbol)
+    }
+    
+    func testEncodingTopLevelURL() {
+        let url = URL(string: "https://apple.com")!
+        testRoundTrip(of: url, expectedEncodedValue: ["relative": "https://apple.com"])
+    }
+    
+    func testEncodingTopLevelData() {
+        let data = Data(bytes: [0xAB, 0xDE, 0xF3, 0x05])
+        testRoundTrip(of: data, expectedEncodedValue: data)
+    }
+    
+    func testEncodingTopLevelDate() {
+        let date = Date()
+        testRoundTrip(of: date, expectedEncodedValue: date)
     }
     
     // MARK: - Encoding Top-Level Single-Value Types
@@ -261,7 +334,9 @@ class ObjectCoderTests: XCTestCase {
             let container = try decoder.singleValueContainer()
             let decodedValues = try container.decode([Int].self)
             guard decodedValues == values else {
-                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "The Numbers are wrong!"))
+                let errorContext = DecodingError.Context(codingPath: decoder.codingPath,
+                                                         debugDescription: "The Numbers are wrong!")
+                throw DecodingError.dataCorrupted(errorContext)
             }
         }
         
@@ -515,9 +590,9 @@ class ObjectCoderTests: XCTestCase {
             // Inserting an unkeyed container should not change existing coding paths.
             let thirdLevelContainerUnkeyed = secondLevelContainer.nestedUnkeyedContainer(
                 forKey: .two)
-            expectEqualPaths(encoder.codingPath, baseCodingPath + [],
+            expectEqualPaths(encoder.codingPath, baseCodingPath,
                              "Top-level Encoder's codingPath changed.")
-            expectEqualPaths(firstLevelContainer.codingPath, baseCodingPath + [],
+            expectEqualPaths(firstLevelContainer.codingPath, baseCodingPath,
                              "First-level keyed container's codingPath changed.")
             expectEqualPaths(secondLevelContainer.codingPath,
                              baseCodingPath + [TopLevelCodingKeys.a],
@@ -571,16 +646,6 @@ class ObjectCoderTests: XCTestCase {
         }
     }
     
-    func testEncodingTopLevelData() {
-        let data = Data(bytes: [0xAB, 0xDE, 0xF3, 0x05])
-        testRoundTrip(of: data, expectedEncodedValue: data)
-    }
-    
-    func testEncodingTopLevelDate() {
-        let date = Date()
-        testRoundTrip(of: date, expectedEncodedValue: date)
-    }
-    
     // MARK: - Type coercion
     
     func testTypeCoercion() {
@@ -611,7 +676,9 @@ class ObjectCoderTests: XCTestCase {
     }
     
     private func testRoundTripTypeCoercionFailure<T, U>(
-        of value: T, as type: U.Type) where T: Codable, U: Codable {
+        of value: T, as type: U.Type,
+        file: StaticString = #file, line: UInt = #line
+        ) where T: Codable, U: Codable {
         
         do {
             let encodedValue = try ObjectEncoder().encode(value)
@@ -636,6 +703,94 @@ class ObjectCoderTests: XCTestCase {
         XCTAssertTrue(type(of: decoded) == Employee.self,
                       "Expected decoded value to be of type Employee; "
                       + "got \(type(of: decoded)) instead.")
+    }
+    
+    // MARK: - Encoder State
+    
+    // SR-6078
+    func testEncoderStateThrowOnEncode() {
+        struct Wrapper<T : Encodable> : Encodable {
+            let value: T
+            init(_ value: T) { self.value = value }
+            
+            func encode(to encoder: Encoder) throws {
+                // This approximates a subclass calling into its superclass,
+                // where the superclass encodes a value that might throw.
+                // The key here is that getting the superEncoder creates a referencing encoder.
+                var container = encoder.unkeyedContainer()
+                let superEncoder = container.superEncoder()
+                
+                // Pushing a nested container on leaves the referencing encoder
+                // with multiple containers.
+                var nestedContainer = superEncoder.unkeyedContainer()
+                try nestedContainer.encode(value)
+            }
+        }
+        
+        struct Throwing : Encodable {
+            func encode(to encoder: Encoder) throws {
+                enum EncodingError : Error { case foo }
+                throw EncodingError.foo
+            }
+        }
+        
+        // The structure that would be encoded here looks like
+        //
+        //   <array>
+        //     <array>
+        //       <array>
+        //         [throwing]
+        //       </array>
+        //     </array>
+        //   </array>
+        //
+        // The wrapper asks for an unkeyed container ([^]), gets a super encoder,
+        // and creates a nested container into that ([[^]]).
+        // We then encode an array into that ([[[^]]]), which happens to be a value
+        // that causes us to throw an error.
+        //
+        // The issue at hand reproduces when you have a referencing encoder
+        // (superEncoder() creates one) that has a container on the stack
+        // (unkeyedContainer() adds one) that encodes a value going through box_() (Array does that)
+        // that encodes something which throws (Throwing does that).
+        // When reproducing, this will cause a test failure via fatalError().
+        _ = try? ObjectEncoder().encode(Wrapper([Throwing()]))
+    }
+    
+    // SR-6048
+    func testDecoderStateThrowOnDecode() {
+        do {
+            let value = [1, 2, 3]
+            let encoded = try ObjectEncoder().encode(value)
+            let decoded = try ObjectDecoder().decode(EitherDecodable<[String], [Int]>.self,
+                                                     from: encoded)
+            if case let .u(decodedValue) = decoded {
+                XCTAssertEqual(decodedValue, value)
+            } else {
+                XCTFail("Expected decoded value to be of .u([Int]); got \(decoded) instead.")
+            }
+        } catch {
+            XCTFail("Failed to decode [Int]: \(error)")
+        }
+    }
+    
+    private enum EitherDecodable<T: Decodable, U: Decodable>: Decodable {
+        case t(T)
+        case u(U)
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let t = try? container.decode(T.self) {
+                self = .t(t)
+            } else if let u = try? container.decode(U.self) {
+                self = .u(u)
+            } else {
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Data was neither \(T.self) nor \(U.self)."
+                )
+            }
+        }
     }
 }
 
