@@ -21,36 +21,38 @@ public class ObjectDecoder: Decoder {
     public func container<Key: CodingKey>(
         keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> {
         
-        if let string = storage.topContainer as? String, string == nilSymbol {
+        switch storage.topContainer {
+        case let topContainer as [String: Any]:
+            let decodingContainer = KeyedObjectDecodingContainer<Key>(
+                referencing: self, codingPath: codingPath, container: topContainer)
+            return KeyedDecodingContainer(decodingContainer)
+            
+        case let topContainer as String where topContainer == nilSymbol:
             let desc = "Cannot get keyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(KeyedDecodingContainer<Key>.self, context)
-        }
-        
-        guard let topContainer = storage.topContainer as? [String: Any] else {
+            
+        default:
             throw Error.typeMismatch(codingPath: codingPath, expectation: [String: Any].self,
                                      reality: storage.topContainer)
         }
-        
-        let decodingContainer = KeyedObjectDecodingContainer<Key>(
-            referencing: self, codingPath: codingPath, container: topContainer)
-        return KeyedDecodingContainer(decodingContainer)
     }
     
     public func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        if let string = storage.topContainer as? String, string == nilSymbol {
+        switch storage.topContainer {
+        case let topContainer as [Any]:
+            return UnkeyedObjectDecodingContainer(
+                referencing: self, codingPath: codingPath, container: topContainer)
+            
+        case let topContainer as String where topContainer == nilSymbol:
             let desc = "Cannot get unkeyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
-        }
-        
-        guard let topContainer = storage.topContainer as? [Any] else {
+            
+        default:
             throw Error.typeMismatch(codingPath: codingPath, expectation: [Any].self,
                                      reality: storage.topContainer)
         }
-        
-        return UnkeyedObjectDecodingContainer(
-            referencing: self, codingPath: codingPath, container: topContainer)
     }
     
     public func singleValueContainer() throws -> SingleValueDecodingContainer {
@@ -230,6 +232,7 @@ extension ObjectDecoder {
         
         private func value(forKey key: Key) throws -> Any {
             guard let result = container[key.stringValue] else {
+                // Error의 codingPath는 container가 아니라 decoder의 것으로 한다.
                 throw Error.keyNotFound(codingPath: decoder.codingPath, key: key)
             }
             return result
@@ -439,15 +442,13 @@ extension ObjectDecoder {
                 throw makeEndOfContainerError(expectation: type)
             }
             
-            decoder.codingPath.append(ObjectKey(index: currentIndex))
-            defer { decoder.codingPath.removeLast() }
-            
+            let key = ObjectKey(index: currentIndex)
             let value = container[currentIndex]
             if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
+                throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
-            let decodedValue = try type.init(value: value, codingPath: decoder.codingPath)
+            let decodedValue = try type.init(value: value, codingPath: decoder.codingPath + [key])
             currentIndex += 1
             
             return decodedValue
@@ -603,15 +604,6 @@ extension ObjectDecoder {
             }
             
             return try decoder.unbox(value, as: type)
-        }
-        
-        private func decodeValue<T: InitializableWithAny>(type: T.Type) throws -> T {
-            let value = decoder.storage.topContainer
-            if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
-            }
-            
-            return try type.init(value: value, codingPath: decoder.codingPath)
         }
     }
 }
