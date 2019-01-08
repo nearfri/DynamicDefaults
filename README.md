@@ -1,2 +1,2 @@
 # Defaults
-Library for UserDefaults with Codable
+A Swift library to use UserDefaults in a easy way.

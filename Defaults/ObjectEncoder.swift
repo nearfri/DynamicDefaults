@@ -293,13 +293,13 @@ extension ObjectEncoder {
         func superEncoder() -> Encoder {
             let key = ObjectKey.superKey
             return ReferencingEncoder(
-                referenceCodingPath: codingPath, key: key,
+                referenceCodingPath: encoder.codingPath, key: key,
                 completion: { [container] in container.set($0, for: key) })
         }
         
         func superEncoder(forKey key: Key) -> Encoder {
             return ReferencingEncoder(
-                referenceCodingPath: codingPath, key: key,
+                referenceCodingPath: encoder.codingPath, key: key,
                 completion: { [container] in container.set($0, for: key) })
         }
     }
@@ -384,7 +384,7 @@ extension ObjectEncoder {
             container.append("placeholder for superEncoder")
             
             return ReferencingEncoder(
-                referenceCodingPath: codingPath, key: ObjectKey(index: index),
+                referenceCodingPath: encoder.codingPath, key: ObjectKey(index: index),
                 completion: { [container] in container.replace(at: index, with: $0) })
         }
     }
