@@ -10,7 +10,8 @@ open class BasePreferences {
         _ type: T.Type, userDefaults: UserDefaults = .standard) -> T where T: Codable {
         
         do {
-            guard let defaultValues = try ObjectEncoder().encode(T.init()) as? [String: Any] else {
+            let encoder = ObjectEncoder()
+            guard let defaultValues = try encoder.encode(type.init()) as? [String: Any] else {
                 preconditionFailure("Expected to encode \(type) as dictionary, but it was not.")
             }
             userDefaults.register(defaults: defaultValues)

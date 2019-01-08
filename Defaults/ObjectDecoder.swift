@@ -91,7 +91,7 @@ extension ObjectDecoder {
         storage.pushContainer(value)
         defer { storage.popContainer() }
         
-        return try T(from: self)
+        return try type.init(from: self)
     }
 }
 
@@ -243,7 +243,7 @@ extension ObjectDecoder {
                 throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
-            return try T(value: value, codingPath: decoder.codingPath + [key])
+            return try type.init(value: value, codingPath: decoder.codingPath + [key])
         }
         
         func nestedContainer<NestedKey: CodingKey>(
@@ -447,7 +447,7 @@ extension ObjectDecoder {
                 throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
             }
             
-            let decodedValue = try T(value: value, codingPath: decoder.codingPath)
+            let decodedValue = try type.init(value: value, codingPath: decoder.codingPath)
             currentIndex += 1
             
             return decodedValue
@@ -611,7 +611,7 @@ extension ObjectDecoder {
                 throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
             }
             
-            return try T(value: value, codingPath: decoder.codingPath)
+            return try type.init(value: value, codingPath: decoder.codingPath)
         }
     }
 }
