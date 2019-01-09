@@ -7,6 +7,7 @@ public class ObjectDecoder: Decoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
     public var nilSymbol: String = ObjectEncoder.Constant.defaultNilSymbol
+    public var passthroughTypes: [Decodable.Type] = [Data.self, Date.self]
     private var storage: Storage = Storage()
     
     public init() {
@@ -70,7 +71,7 @@ extension ObjectDecoder {
     private func decodeValue(of type: Decodable.Type, from object: Any) throws -> Any {
         defer { cleanup() }
         
-        if Swift.type(of: object) == type {
+        if Swift.type(of: object) == type, isPassthroughType(type) {
             return object
         }
         
@@ -86,7 +87,7 @@ extension ObjectDecoder {
     }
     
     private func unbox<T: Decodable>(_ value: Any, as type: T.Type) throws -> T {
-        if let value = value as? T {
+        if let value = value as? T, isPassthroughType(type) {
             return value
         }
         
@@ -94,6 +95,10 @@ extension ObjectDecoder {
         defer { storage.popContainer() }
         
         return try type.init(from: self)
+    }
+    
+    private func isPassthroughType(_ type: Decodable.Type) -> Bool {
+        return passthroughTypes.contains(where: { type == $0 })
     }
 }
 
@@ -220,9 +225,6 @@ extension ObjectDecoder {
         
         func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
             let value = try self.value(forKey: key)
-            if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
-            }
             
             decoder.codingPath.append(key)
             defer { decoder.codingPath.removeLast() }
@@ -420,10 +422,6 @@ extension ObjectDecoder {
             defer { decoder.codingPath.removeLast() }
             
             let value = container[currentIndex]
-            if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
-            }
-            
             let decodedValue = try decoder.unbox(value, as: type)
             currentIndex += 1
             
@@ -597,13 +595,8 @@ extension ObjectDecoder {
             return try String(value: decoder.storage.topContainer, codingPath: decoder.codingPath)
         }
         
-        func decode<T>(_ type: T.Type) throws -> T where T : Decodable {
-            let value = decoder.storage.topContainer
-            if let string = value as? String, string == decoder.nilSymbol {
-                throw Error.valueNotFound(codingPath: decoder.codingPath, expectation: type)
-            }
-            
-            return try decoder.unbox(value, as: type)
+        func decode<T>(_ type: T.Type) throws -> T where T: Decodable {
+            return try decoder.unbox(decoder.storage.topContainer, as: type)
         }
     }
 }

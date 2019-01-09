@@ -234,9 +234,39 @@ class ObjectCoderTests: XCTestCase {
     
     // MARK: - Encoding Top-Level Structured Types
     
-    func testEncodingTopLevelStructuredStruct() {
-        let address = Address.testValue
-        testRoundTrip(of: address)
+    func testEncodingTopLevelKeyedRawValueStruct() {
+        let keyedStruct = KeyedRawValueStruct.testValue
+        testRoundTrip(of: keyedStruct)
+    }
+    
+    private struct KeyedRawValueStruct: Codable, Equatable {
+        let bool: Bool
+        let int: Int
+        let int8: Int8
+        let int16: Int16
+        let int32: Int32
+        let int64: Int64
+        let uint: UInt
+        let uint8: UInt8
+        let uint16: UInt16
+        let uint32: UInt32
+        let uint64: UInt64
+        let float: Float
+        let double: Double
+        let string: String
+        let strings: [String]
+        let optionalString: String?
+        let optionalStrings: [String?]
+        
+        static var testValue: KeyedRawValueStruct {
+            return KeyedRawValueStruct(
+                bool: true, int: .max, int8: .max, int16: .max, int32: .max, int64: .max,
+                uint: .max, uint8: .max, uint16: .max, uint32: .max, uint64: .max,
+                float: .greatestFiniteMagnitude, double: .greatestFiniteMagnitude,
+                string: "Hello world", strings: ["Friday", "Saturday", "Sunday"],
+                optionalString: nil, optionalStrings: ["Monday", nil, "Wednesday"]
+            )
+        }
     }
     
     private func testRoundTrip<T>(
@@ -260,6 +290,116 @@ class ObjectCoderTests: XCTestCase {
         } catch {
             XCTFail("Failed to decode \(T.self): \(error)", file: file, line: line)
         }
+    }
+    
+    func testEncodingTopLevelUnkeyedRawValueStruct() {
+        let unkeyedStruct = UnkeyedRawValueStruct.testValue
+        testRoundTrip(of: unkeyedStruct)
+    }
+    
+    private struct UnkeyedRawValueStruct: Codable, Equatable {
+        let bool: Bool
+        let int: Int
+        let int8: Int8
+        let int16: Int16
+        let int32: Int32
+        let int64: Int64
+        let uint: UInt
+        let uint8: UInt8
+        let uint16: UInt16
+        let uint32: UInt32
+        let uint64: UInt64
+        let float: Float
+        let double: Double
+        let string: String
+        let strings: [String]
+        let optionalString: String?
+        let optionalStrings: [String?]
+        
+        init(bool: Bool, int: Int, int8: Int8, int16: Int16, int32: Int32, int64: Int64,
+             uint: UInt, uint8: UInt8, uint16: UInt16, uint32: UInt32, uint64: UInt64,
+             float: Float, double: Double, string: String, strings: [String],
+             optionalString: String?, optionalStrings: [String?]) {
+            
+            self.bool = bool
+            self.int = int
+            self.int8 = int8
+            self.int16 = int16
+            self.int32 = int32
+            self.int64 = int64
+            self.uint = uint
+            self.uint8 = uint8
+            self.uint16 = uint16
+            self.uint32 = uint32
+            self.uint64 = uint64
+            self.float = float
+            self.double = double
+            self.string = string
+            self.strings = strings
+            self.optionalString = optionalString
+            self.optionalStrings = optionalStrings
+        }
+        
+        init(from decoder: Decoder) throws {
+            var container = try decoder.unkeyedContainer()
+            bool = try container.decode(Bool.self)
+            int = try container.decode(Int.self)
+            int8 = try container.decode(Int8.self)
+            int16 = try container.decode(Int16.self)
+            int32 = try container.decode(Int32.self)
+            int64 = try container.decode(Int64.self)
+            uint = try container.decode(UInt.self)
+            uint8 = try container.decode(UInt8.self)
+            uint16 = try container.decode(UInt16.self)
+            uint32 = try container.decode(UInt32.self)
+            uint64 = try container.decode(UInt64.self)
+            float = try container.decode(Float.self)
+            double = try container.decode(Double.self)
+            string = try container.decode(String.self)
+            strings = try container.decode([String].self)
+            
+            // Optional인 경우 container.decodeIfPresent()를 호출하는게 정석이지만
+            // 이렇게 그냥 decode()를 호출하는 경우도 정상적으로 처리해야 한다.
+            optionalString = try container.decode(String?.self)
+            
+            optionalStrings = try container.decode([String?].self)
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.unkeyedContainer()
+            try container.encode(bool)
+            try container.encode(int)
+            try container.encode(int8)
+            try container.encode(int16)
+            try container.encode(int32)
+            try container.encode(int64)
+            try container.encode(uint)
+            try container.encode(uint8)
+            try container.encode(uint16)
+            try container.encode(uint32)
+            try container.encode(uint64)
+            try container.encode(float)
+            try container.encode(double)
+            try container.encode(string)
+            try container.encode(strings)
+            try container.encode(optionalString)
+            try container.encode(optionalStrings)
+        }
+        
+        static var testValue: UnkeyedRawValueStruct {
+            return UnkeyedRawValueStruct(
+                bool: true, int: .max, int8: .max, int16: .max, int32: .max, int64: .max,
+                uint: .max, uint8: .max, uint16: .max, uint32: .max, uint64: .max,
+                float: .greatestFiniteMagnitude, double: .greatestFiniteMagnitude,
+                string: "Hello world", strings: ["Saturday", "Sunday"],
+                optionalString: nil, optionalStrings: ["Monday", nil, "Wednesday"]
+            )
+        }
+    }
+    
+    func testEncodingTopLevelStructuredStruct() {
+        let address = Address.testValue
+        testRoundTrip(of: address)
     }
     
     /// A simple address type that encodes as a dictionary of values.
@@ -476,6 +616,113 @@ class ObjectCoderTests: XCTestCase {
             case .fileNotFound: try container.encodeNil()
             }
         }
+    }
+    
+    // MARK: - Encoding Optional Types
+    
+    func testEncodingSingleOptionalTypes() {
+        let nilSymbol = ObjectEncoder.Constant.defaultNilSymbol
+        
+        testRoundTrip(of: false as Bool?, expectedEncodedValue: false)
+        testRoundTrip(of: true as Bool?, expectedEncodedValue: true)
+        testRoundTrip(of: nil as Bool?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Int.max as Int?, expectedEncodedValue: Int.max)
+        testRoundTrip(of: nil as Int?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Int8.max as Int8?, expectedEncodedValue: Int8.max)
+        testRoundTrip(of: nil as Int8?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Int64.max as Int64?, expectedEncodedValue: Int64.max)
+        testRoundTrip(of: nil as Int64?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: UInt.max as UInt?, expectedEncodedValue: UInt.max)
+        testRoundTrip(of: nil as UInt?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: UInt8.max as UInt8?, expectedEncodedValue: UInt8.max)
+        testRoundTrip(of: nil as UInt8?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: UInt64.max as UInt64?, expectedEncodedValue: UInt64.max)
+        testRoundTrip(of: nil as UInt64?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Float.greatestFiniteMagnitude as Float?,
+                      expectedEncodedValue: Float.greatestFiniteMagnitude)
+        testRoundTrip(of: nil as Float?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Float.greatestFiniteMagnitude as Float?,
+                      expectedEncodedValue: Float.greatestFiniteMagnitude)
+        testRoundTrip(of: nil as Float?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Double.greatestFiniteMagnitude as Double?,
+                      expectedEncodedValue: Double.greatestFiniteMagnitude)
+        testRoundTrip(of: nil as Double?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: "Hello" as String?, expectedEncodedValue: "Hello")
+        testRoundTrip(of: nil as String?, expectedEncodedValue: nilSymbol)
+        
+        let url = URL(string: "https://apple.com")!
+        testRoundTrip(of: url as URL?, expectedEncodedValue: ["relative": "https://apple.com"])
+        testRoundTrip(of: nil as URL?, expectedEncodedValue: nilSymbol)
+        
+        let data = Data(bytes: [0xAB, 0xDE, 0xF3, 0x05])
+        testRoundTrip(of: data as Data?, expectedEncodedValue: data)
+        testRoundTrip(of: nil as Data?, expectedEncodedValue: nilSymbol)
+        
+        let date = Date()
+        testRoundTrip(of: date as Date?, expectedEncodedValue: date)
+        testRoundTrip(of: nil as Date?, expectedEncodedValue: nilSymbol)
+        
+        testRoundTrip(of: Switch.off as Switch?, expectedEncodedValue: false)
+        testRoundTrip(of: nil as Switch?, expectedEncodedValue: nilSymbol)
+    }
+    
+    func testEncodingStructuredOptionalTypes() {
+        testRoundTrip(of: nil as OptStruct?)
+        
+        let nonOptStruct = OptStruct(
+            bool: true, int: 2, float: 5.0, string: "hello", counter: Counter(7),
+            intArr1: [1, nil, 3, nil], intArr2: [nil, 2, nil, 4],
+            strArr1: ["a", nil, "c", nil], strArr2: [nil, "b", nil, "d"],
+            counterArr1: [Counter(1), nil, Counter(3)], counterArr2: [nil, Counter(2), nil],
+            intsByStr: ["a": 1, "b": nil, "c": 3],
+            strsByStr: ["a": nil, "b": "2", "c": nil],
+            countersByStr: ["a": Counter(1), "b": nil, "c": Counter(3)]
+        )
+        testRoundTrip(of: nonOptStruct)
+        testRoundTrip(of: nonOptStruct as OptStruct?)
+        
+        let optStruct = OptStruct(
+            bool: nil, int: nil, float: nil, string: nil, counter: nil,
+            intArr1: [], intArr2: nil,
+            strArr1: [], strArr2: nil,
+            counterArr1: [], counterArr2: nil,
+            intsByStr: [:],
+            strsByStr: [:],
+            countersByStr: [:]
+        )
+        testRoundTrip(of: optStruct)
+        testRoundTrip(of: optStruct as OptStruct?)
+    }
+    
+    private struct OptStruct: Codable, Equatable {
+        let bool: Bool?
+        let int: Int?
+        let float: Float?
+        let string: String?
+        let counter: Counter?
+        
+        let intArr1: [Int?]
+        let intArr2: [Int?]?
+        
+        let strArr1: [String?]
+        let strArr2: [String?]?
+        
+        let counterArr1: [Counter?]
+        let counterArr2: [Counter?]?
+        
+        let intsByStr: [String: Int?]
+        let strsByStr: [String: String?]
+        let countersByStr: [String: Counter?]
     }
     
     // MARK: - Encoder Features
