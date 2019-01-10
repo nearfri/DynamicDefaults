@@ -708,7 +708,7 @@ extension InitializableWithAny where Self: InitializableWithNumeric {
             self = exactNum
             #if os(macOS)
         case let num as Float80:
-            guard let exactNum = Self(equalTo: num) else {
+            guard let exactNum = Self(precisely: num) else {
                 throw Error.dataCorrupted(codingPath: codingPath, expectation: type, reality: num)
             }
             self = exactNum
