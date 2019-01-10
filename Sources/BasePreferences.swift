@@ -37,7 +37,7 @@ open class BasePreferences {
     
     private func encode<T: Encodable>(_ value: T?) throws -> Any {
         guard let value = value else {
-            return ObjectEncoder().nilSymbol
+            return NilEncodingStrategy.defaultNilSymbol
         }
         
         switch value {

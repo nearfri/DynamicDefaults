@@ -14,6 +14,7 @@
 		082A60CA21E6F50800159245 /* BasePreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082A60C421E6F4EC00159245 /* BasePreferences.swift */; };
 		082A60CC21E6F53800159245 /* ObjectCoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082A60CB21E6F53800159245 /* ObjectCoderTests.swift */; };
 		082A60D021E6F5A700159245 /* BasePreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082A60CF21E6F5A700159245 /* BasePreferencesTests.swift */; };
+		0855046921E71BB90027719E /* NilCodingStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0855046821E71BB90027719E /* NilCodingStrategy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +40,7 @@
 		082A60D221E7087700159245 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		082A60D321E7087700159245 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		082A60D521E708A900159245 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		0855046821E71BB90027719E /* NilCodingStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NilCodingStrategy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 				082A60C321E6F4EC00159245 /* ObjectEncoder.swift */,
 				082A60C521E6F4EC00159245 /* ObjectDecoder.swift */,
 				082A60C621E6F4EC00159245 /* ObjectKey.swift */,
+				0855046821E71BB90027719E /* NilCodingStrategy.swift */,
 				082A60C421E6F4EC00159245 /* BasePreferences.swift */,
 			);
 			path = Sources;
@@ -225,6 +228,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0855046921E71BB90027719E /* NilCodingStrategy.swift in Sources */,
 				082A60C721E6F50100159245 /* ObjectEncoder.swift in Sources */,
 				082A60CA21E6F50800159245 /* BasePreferences.swift in Sources */,
 				082A60C921E6F50600159245 /* ObjectKey.swift in Sources */,

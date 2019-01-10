@@ -29,12 +29,17 @@ class ObjectCoderTests: XCTestCase {
     private func testRoundTrip<T, U>(
         of value: T,
         expectedEncodedValue: U,
+        nilEncodingStrategy: NilEncodingStrategy? = nil,
+        nilDecodingStrategy: NilDecodingStrategy? = nil,
         file: StaticString = #file,
         line: UInt = #line) where T: Codable, T: Equatable, U: Equatable {
         
         var encodedValue: Any! = nil
         do {
             let encoder = ObjectEncoder()
+            if let nilStrategy = nilEncodingStrategy {
+                encoder.nilEncodingStrategy = nilStrategy
+            }
             encodedValue = try encoder.encode(value)
         } catch {
             XCTFail("Failed to encode \(T.self): \(error)", file: file, line: line)
@@ -53,6 +58,9 @@ class ObjectCoderTests: XCTestCase {
         
         do {
             let decoder = ObjectDecoder()
+            if let nilStrategy = nilDecodingStrategy {
+                decoder.nilDecodingStrategy = nilStrategy
+            }
             let decodedValue = try decoder.decode(T.self, from: encodedValue)
             XCTAssertEqual(decodedValue, value, "\(T.self) did not round-trip to an equal value.",
                 file: file, line: line)
@@ -127,7 +135,7 @@ class ObjectCoderTests: XCTestCase {
     
     func testEncodingTopLevelNil() {
         let nilValue: Int? = nil
-        let nilSymbol = ObjectEncoder.Constant.defaultNilSymbol
+        let nilSymbol = NilEncodingStrategy.defaultNilSymbol
         testRoundTrip(of: nilValue, expectedEncodedValue: nilSymbol)
     }
     
@@ -621,7 +629,7 @@ class ObjectCoderTests: XCTestCase {
     // MARK: - Encoding Optional Types
     
     func testEncodingSingleOptionalTypes() {
-        let nilSymbol = ObjectEncoder.Constant.defaultNilSymbol
+        let nilSymbol = NilEncodingStrategy.defaultNilSymbol
         
         testRoundTrip(of: false as Bool?, expectedEncodedValue: false)
         testRoundTrip(of: true as Bool?, expectedEncodedValue: true)
@@ -1038,6 +1046,20 @@ class ObjectCoderTests: XCTestCase {
                 )
             }
         }
+    }
+    
+    func testEncodingNilAsNSNull() {
+        let nilStrategy = NilCodingStrategy.null
+        let value: Int? = nil
+        testRoundTrip(of: value, expectedEncodedValue: NSNull(),
+                      nilEncodingStrategy: nilStrategy, nilDecodingStrategy: nilStrategy)
+    }
+    
+    func testEncodingNilAsCustomSymbol() {
+        let nilStrategy = NilCodingStrategy.symbol("Custom Nil Value")
+        let value: Int? = nil
+        testRoundTrip(of: value, expectedEncodedValue: "Custom Nil Value",
+                      nilEncodingStrategy: nilStrategy, nilDecodingStrategy: nilStrategy)
     }
     
     // MARK: - Performance

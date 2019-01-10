@@ -6,7 +6,7 @@ import Foundation
 public class ObjectDecoder: Decoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
-    public var nilSymbol: String = ObjectEncoder.Constant.defaultNilSymbol
+    public var nilDecodingStrategy: NilDecodingStrategy = .default
     public var passthroughTypes: [Decodable.Type] = [Data.self, Date.self]
     private var storage: Storage = Storage()
     
@@ -28,7 +28,7 @@ public class ObjectDecoder: Decoder {
                 referencing: self, codingPath: codingPath, container: topContainer)
             return KeyedDecodingContainer(decodingContainer)
             
-        case let topContainer as String where topContainer == nilSymbol:
+        case let topContainer where nilDecodingStrategy.isNilValue(topContainer):
             let desc = "Cannot get keyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(KeyedDecodingContainer<Key>.self, context)
@@ -45,7 +45,7 @@ public class ObjectDecoder: Decoder {
             return UnkeyedObjectDecodingContainer(
                 referencing: self, codingPath: codingPath, container: topContainer)
             
-        case let topContainer as String where topContainer == nilSymbol:
+        case let topContainer where nilDecodingStrategy.isNilValue(topContainer):
             let desc = "Cannot get unkeyed decoding container -- found nil value instead."
             let context = DecodingError.Context(codingPath: codingPath, debugDescription: desc)
             throw DecodingError.valueNotFound(UnkeyedDecodingContainer.self, context)
@@ -161,7 +161,7 @@ extension ObjectDecoder {
         
         func decodeNil(forKey key: Key) throws -> Bool {
             let value = try self.value(forKey: key)
-            if let string = value as? String, string == decoder.nilSymbol {
+            if decoder.nilDecodingStrategy.isNilValue(value) {
                 return true
             }
             return false
@@ -244,7 +244,7 @@ extension ObjectDecoder {
             type: T.Type, forKey key: Key) throws -> T {
             
             let value = try self.value(forKey: key)
-            if let string = value as? String, string == decoder.nilSymbol {
+            if decoder.nilDecodingStrategy.isNilValue(value) {
                 throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
@@ -349,7 +349,8 @@ extension ObjectDecoder {
                 throw makeEndOfContainerError(expectation: Any?.self)
             }
             
-            if let string = container[currentIndex] as? String, string == decoder.nilSymbol {
+            let value = container[currentIndex]
+            if decoder.nilDecodingStrategy.isNilValue(value) {
                 currentIndex += 1
                 return true
             } else {
@@ -442,7 +443,7 @@ extension ObjectDecoder {
             
             let key = ObjectKey(index: currentIndex)
             let value = container[currentIndex]
-            if let string = value as? String, string == decoder.nilSymbol {
+            if decoder.nilDecodingStrategy.isNilValue(value) {
                 throw Error.valueNotFound(codingPath: decoder.codingPath + [key], expectation: type)
             }
             
@@ -533,10 +534,7 @@ extension ObjectDecoder {
         
         func decodeNil() -> Bool {
             let value = decoder.storage.topContainer
-            if let string = value as? String, string == decoder.nilSymbol {
-                return true
-            }
-            return false
+            return decoder.nilDecodingStrategy.isNilValue(value)
         }
         
         func decode(_ type: Bool.Type) throws -> Bool {

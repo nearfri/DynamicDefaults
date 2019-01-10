@@ -6,7 +6,7 @@ import Foundation
 public class ObjectEncoder: Encoder {
     public private(set) var codingPath: [CodingKey]
     public var userInfo: [CodingUserInfoKey: Any] = [:]
-    public var nilSymbol: String = Constant.defaultNilSymbol
+    public var nilEncodingStrategy: NilEncodingStrategy = .default
     public var passthroughTypes: [Encodable.Type] = [Data.self, Date.self]
     private let storage: Storage = Storage()
     
@@ -107,14 +107,6 @@ extension ObjectEncoder {
             return [:] as [String: Any]
         }
         return storage.popContainer().object
-    }
-}
-
-// MARK: -
-
-extension ObjectEncoder {
-    internal enum Constant {
-        static let defaultNilSymbol = "$null"
     }
 }
 
@@ -262,7 +254,9 @@ extension ObjectEncoder {
         func encode(_ value: Float, forKey key: Key) throws { container.set(value, for: key) }
         func encode(_ value: Double, forKey key: Key) throws { container.set(value, for: key) }
         func encode(_ value: String, forKey key: Key) throws { container.set(value, for: key) }
-        func encodeNil(forKey key: Key) throws { container.set(encoder.nilSymbol, for: key) }
+        func encodeNil(forKey key: Key) throws {
+            container.set(encoder.nilEncodingStrategy.value, for: key)
+        }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
             encoder.codingPath.append(key)
@@ -346,7 +340,7 @@ extension ObjectEncoder {
         func encode(_ value: Float) throws { container.append(value) }
         func encode(_ value: Double) throws { container.append(value) }
         func encode(_ value: String) throws { container.append(value) }
-        func encodeNil() throws { container.append(encoder.nilSymbol) }
+        func encodeNil() throws { container.append(encoder.nilEncodingStrategy.value) }
         
         func encode<T: Encodable>(_ value: T) throws {
             encoder.codingPath.append(ObjectKey(index: count))
@@ -431,7 +425,7 @@ extension ObjectEncoder {
         func encode(_ value: Float) throws { pushContainer(with: value) }
         func encode(_ value: Double) throws { pushContainer(with: value) }
         func encode(_ value: String) throws { pushContainer(with: value) }
-        func encodeNil() throws { pushContainer(with: encoder.nilSymbol) }
+        func encodeNil() throws { pushContainer(with: encoder.nilEncodingStrategy.value) }
         func encode<T: Encodable>(_ value: T) throws {
             pushContainer(with: try encoder.box(value))
         }
