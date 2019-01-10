@@ -1039,6 +1039,109 @@ class ObjectCoderTests: XCTestCase {
             }
         }
     }
+    
+    // MARK: - Performance
+    
+    func testPerformanceSeed() {
+        let stores = GroceryStore.testValues
+        testRoundTrip(of: stores)
+    }
+    
+    func testEncodingPerformance() {
+        let stores = GroceryStore.testValues
+        
+        measure {
+            for _ in 0..<100 {
+                do {
+                    let encoder = ObjectEncoder()
+                    _ = try encoder.encode(stores)
+                } catch {
+                    XCTFail("Failed to encode \(GroceryStore.self): \(error)")
+                }
+            }
+        }
+    }
+    
+    func testDecodingPerformance() {
+        let stores = GroceryStore.testValues
+        let encodedStores: Any
+        do {
+            encodedStores = try ObjectEncoder().encode(stores)
+        } catch {
+            XCTFail("Failed to encode \(GroceryStore.self): \(error)")
+            return
+        }
+        
+        measure {
+            for _ in 0..<100 {
+                do {
+                    let decoder = ObjectDecoder()
+                    _ = try decoder.decode([GroceryStore].self, from: encodedStores)
+                } catch {
+                    XCTFail("Failed to decode \(GroceryStore.self): \(error)")
+                }
+            }
+        }
+    }
+    
+    private struct GroceryStore: Codable, Equatable {
+        let name: String
+        let aisles: [Aisle]
+        
+        static var testValues: [GroceryStore] {
+            return [
+                GroceryStore(name: "Home Town Market", aisles: Aisle.testValues),
+                GroceryStore(name: "Big City Market", aisles: Aisle.testValues),
+                GroceryStore(name: "Home Plus Market", aisles: Aisle.testValues),
+                GroceryStore(name: "Small City Market", aisles: Aisle.testValues)
+            ]
+        }
+        
+        struct Aisle: Codable, Equatable {
+            let name: String
+            let shelves: [Shelf]
+            
+            static var testValues: [Aisle] {
+                return [
+                    Aisle(name: "Produce", shelves: Shelf.testValues),
+                    Aisle(name: "Sale Aisle", shelves: Shelf.testValues)
+                ]
+            }
+        }
+        
+        struct Shelf: Codable, Equatable {
+            let name: String
+            let product: Product
+            
+            static var testValues: [Shelf] {
+                return [
+                    Shelf(name: "Seasonal Sale", product: Product.testValues[0]),
+                    Shelf(name: "Last Season's Clearance", product: Product.testValues[1]),
+                    Shelf(name: "Discount Produce", product: Product.testValues[2]),
+                    Shelf(name: "Nuts", product: Product.testValues[3])
+                ]
+            }
+        }
+        
+        struct Product: Codable, Equatable {
+            var name: String
+            var points: Int
+            var description: String?
+            
+            static var testValues: [Product] {
+                return [
+                    Product(name: "Banana", points: 200,
+                            description: "A banana grown in Eduador."),
+                    Product(name: "Orange", points: 100,
+                            description: nil),
+                    Product(name: "Pumpkin Seeds", points: 400,
+                            description: "Seeds harvested from a pumpkin."),
+                    Product(name: "Chestnuts", points: 700,
+                            description: "Chestnuts that were roasted over an open fire.")
+                ]
+            }
+        }
+    }
 }
 
 // MARK: - Helper Functions
