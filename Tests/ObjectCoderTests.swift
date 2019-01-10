@@ -1,6 +1,6 @@
 
 import XCTest
-@testable import Defaults
+@testable import Preferences
 
 // ref.: https://github.com/apple/swift/blob/master/test/stdlib/TestPlistEncoder.swift
 

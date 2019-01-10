@@ -1,6 +1,7 @@
 
-import Foundation
+import XCTest
 import CoreGraphics
+@testable import Preferences
 
 enum ColorType: String, Codable {
     case red
@@ -36,5 +37,22 @@ class Preferences: BasePreferences, Codable {
     var isItReal: Bool = false { didSet { store(isItReal) } }
 }
 
-
-
+class BasePreferencesTests: XCTestCase {
+    var pref: Preferences!
+    
+    override func setUp() {
+        super.setUp()
+        // Put setup code here. This method is called before the invocation of each test method in the class.
+    }
+    
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+    }
+    
+    func removeAll(userDefaults: UserDefaults = .standard) {
+        for (key, _) in userDefaults.dictionaryRepresentation() {
+            userDefaults.removeObject(forKey: key)
+        }
+    }
+}
