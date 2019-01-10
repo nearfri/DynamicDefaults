@@ -1073,7 +1073,7 @@ class ObjectCoderTests: XCTestCase {
         let stores = GroceryStore.testValues
         
         measure {
-            for _ in 0..<100 {
+            for _ in 0..<10 {
                 do {
                     let encoder = ObjectEncoder()
                     _ = try encoder.encode(stores)
@@ -1095,7 +1095,7 @@ class ObjectCoderTests: XCTestCase {
         }
         
         measure {
-            for _ in 0..<100 {
+            for _ in 0..<10 {
                 do {
                     let decoder = ObjectDecoder()
                     _ = try decoder.decode([GroceryStore].self, from: encodedStores)

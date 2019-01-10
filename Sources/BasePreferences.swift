@@ -14,11 +14,11 @@ open class BasePreferences {
             guard let defaultValues = try encoder.encode(type.init()) as? [String: Any] else {
                 preconditionFailure("Expected to encode \(type) as dictionary, but it was not.")
             }
-            userDefaults.register(defaults: defaultValues)
             
             let storedValues = userDefaults.dictionaryRepresentation()
-            let result = try ObjectDecoder().decode(type, from: storedValues)
+            let mergedValues = defaultValues.merging(storedValues) { (_, stored) in stored }
             
+            let result = try ObjectDecoder().decode(type, from: mergedValues)
             result.userDefaults = userDefaults
             
             return result

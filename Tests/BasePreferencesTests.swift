@@ -47,6 +47,7 @@ class BasePreferencesTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+        removeAllObjects(in: UserDefaults.standard)
         setupPreferences()
     }
     
