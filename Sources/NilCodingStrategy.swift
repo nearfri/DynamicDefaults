@@ -4,7 +4,7 @@ public enum NilCodingStrategy {
     case null           // NSNull
     case symbol(String) // symbol like "$null"
     
-    public var value: Any {
+    public var nilValue: Any {
         switch self {
         case .null:
             return NSNull()
@@ -29,8 +29,8 @@ public typealias NilEncodingStrategy = NilCodingStrategy
 public typealias NilDecodingStrategy = NilCodingStrategy
 
 extension NilCodingStrategy {
-    public static let `default` = NilCodingStrategy.symbol(NilCodingStrategy.defaultNilSymbol)
-    public static let defaultNilSymbol = "$null"
+    public static let `default`: NilCodingStrategy = .symbol(NilCodingStrategy.defaultNilSymbol)
+    public static let defaultNilSymbol: String = "$null"
 }
 
 

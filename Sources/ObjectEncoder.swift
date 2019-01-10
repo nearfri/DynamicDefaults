@@ -255,7 +255,7 @@ extension ObjectEncoder {
         func encode(_ value: Double, forKey key: Key) throws { container.set(value, for: key) }
         func encode(_ value: String, forKey key: Key) throws { container.set(value, for: key) }
         func encodeNil(forKey key: Key) throws {
-            container.set(encoder.nilEncodingStrategy.value, for: key)
+            container.set(encoder.nilEncodingStrategy.nilValue, for: key)
         }
         
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
@@ -340,7 +340,7 @@ extension ObjectEncoder {
         func encode(_ value: Float) throws { container.append(value) }
         func encode(_ value: Double) throws { container.append(value) }
         func encode(_ value: String) throws { container.append(value) }
-        func encodeNil() throws { container.append(encoder.nilEncodingStrategy.value) }
+        func encodeNil() throws { container.append(encoder.nilEncodingStrategy.nilValue) }
         
         func encode<T: Encodable>(_ value: T) throws {
             encoder.codingPath.append(ObjectKey(index: count))
@@ -425,7 +425,7 @@ extension ObjectEncoder {
         func encode(_ value: Float) throws { pushContainer(with: value) }
         func encode(_ value: Double) throws { pushContainer(with: value) }
         func encode(_ value: String) throws { pushContainer(with: value) }
-        func encodeNil() throws { pushContainer(with: encoder.nilEncodingStrategy.value) }
+        func encodeNil() throws { pushContainer(with: encoder.nilEncodingStrategy.nilValue) }
         func encode<T: Encodable>(_ value: T) throws {
             pushContainer(with: try encoder.box(value))
         }
