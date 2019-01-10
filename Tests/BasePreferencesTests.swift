@@ -18,8 +18,7 @@ enum Constant {
 
 class Preferences: BasePreferences, Codable {
     static let `default`: Preferences = {
-        let userDefaults = UserDefaults.standard
-        return BasePreferences.instantiate(Preferences.self, userDefaults: userDefaults)
+        return BasePreferences.instantiate(Preferences.self)
     }()
     
     var intNum: Int = 3 { didSet { store(intNum) } }
@@ -44,20 +43,22 @@ class Preferences: BasePreferences, Codable {
 
 class BasePreferencesTests: XCTestCase {
     var sut: Preferences!
+    let userDefaults: UserDefaults = .standard
     
     override func setUp() {
         super.setUp()
-        removeAllObjects(in: UserDefaults.standard)
+        removeAllObjects(in: userDefaults)
         setupPreferences()
     }
     
     private func setupPreferences() {
-        sut = BasePreferences.instantiate(Preferences.self, userDefaults: UserDefaults.standard)
+        let dataContainer = LocalDataContainer(userDefaults: userDefaults)
+        sut = BasePreferences.instantiate(Preferences.self, dataContainer: dataContainer)
     }
     
     override func tearDown() {
         super.tearDown()
-        removeAllObjects(in: UserDefaults.standard)
+        removeAllObjects(in: userDefaults)
     }
     
     private func removeAllObjects(in userDefaults: UserDefaults) {

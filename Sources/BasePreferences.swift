@@ -2,12 +2,13 @@
 import Foundation
 
 open class BasePreferences {
-    internal private(set) var userDefaults: UserDefaults = .standard
+    private var dataContainer: DataContainer = LocalDataContainer()
     
     public required init() {}
     
     public static func instantiate<T: BasePreferences>(
-        _ type: T.Type, userDefaults: UserDefaults = .standard) -> T where T: Codable {
+        _ type: T.Type, dataContainer: DataContainer = LocalDataContainer()
+        ) -> T where T: Codable {
         
         do {
             let encoder = ObjectEncoder()
@@ -15,11 +16,11 @@ open class BasePreferences {
                 preconditionFailure("Expected to encode \(type) as dictionary, but it was not.")
             }
             
-            let storedValues = userDefaults.dictionaryRepresentation()
+            let storedValues = dataContainer.dictionaryRepresentation
             let mergedValues = defaultValues.merging(storedValues) { (_, stored) in stored }
             
             let result = try ObjectDecoder().decode(type, from: mergedValues)
-            result.userDefaults = userDefaults
+            result.dataContainer = dataContainer
             
             return result
         } catch {
@@ -29,7 +30,7 @@ open class BasePreferences {
     
     public func store<T: Encodable>(_ value: T?, forKey key: String = #function) {
         do {
-            userDefaults.set(try encode(value), forKey: key)
+            dataContainer.set(try encode(value), forKey: key)
         } catch {
             preconditionFailure("Failed to encode value for key \"\(key)\": \(error)")
         }
