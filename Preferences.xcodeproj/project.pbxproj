@@ -35,6 +35,10 @@
 		082A60C621E6F4EC00159245 /* ObjectKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectKey.swift; sourceTree = "<group>"; };
 		082A60CB21E6F53800159245 /* ObjectCoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectCoderTests.swift; sourceTree = "<group>"; };
 		082A60CF21E6F5A700159245 /* BasePreferencesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasePreferencesTests.swift; sourceTree = "<group>"; };
+		082A60D121E7087700159245 /* Preferences.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = Preferences.podspec; sourceTree = "<group>"; };
+		082A60D221E7087700159245 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		082A60D321E7087700159245 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		082A60D521E708A900159245 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,8 @@
 		082A609D21E6EE7B00159245 = {
 			isa = PBXGroup;
 			children = (
+				082A60D621E708AD00159245 /* Documentation */,
+				082A60D421E7087C00159245 /* Deployment */,
 				082A60C221E6F1DC00159245 /* Sources */,
 				082A60C121E6F1C600159245 /* Tests */,
 				082A60A821E6EE7B00159245 /* Products */,
@@ -92,6 +98,24 @@
 				082A60C421E6F4EC00159245 /* BasePreferences.swift */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		082A60D421E7087C00159245 /* Deployment */ = {
+			isa = PBXGroup;
+			children = (
+				082A60D321E7087700159245 /* Package.swift */,
+				082A60D121E7087700159245 /* Preferences.podspec */,
+				082A60D221E7087700159245 /* LICENSE */,
+			);
+			name = Deployment;
+			sourceTree = "<group>";
+		};
+		082A60D621E708AD00159245 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				082A60D521E708A900159245 /* README.md */,
+			);
+			name = Documentation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -261,7 +285,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -327,7 +351,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -406,13 +430,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = InfoPlists/PreferencesTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
+					"@loader_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ukjeong.PreferencesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -425,13 +449,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = InfoPlists/PreferencesTests.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
+					"@loader_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ukjeong.PreferencesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
