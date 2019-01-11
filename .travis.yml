@@ -1,0 +1,6 @@
+language: swift
+osx_image: xcode10
+xcode_project: Preferences.xcodeproj
+xcode_scheme: Preferences
+xcode_destination: platform=macOS
+# xcode_destination: platform=iOS Simulator,OS=12.1,name=iPhone XS
