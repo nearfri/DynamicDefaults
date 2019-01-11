@@ -21,7 +21,8 @@ public class LocalDataContainer: DataContainer {
     }
 }
 
-// This is not tested.
+// SharedDataContainer has not been tested.
+#if os(iOS) || os(macOS) || os(tvOS)
 public class SharedDataContainer: DataContainer {
     let keyValueStore: NSUbiquitousKeyValueStore
     
@@ -37,6 +38,7 @@ public class SharedDataContainer: DataContainer {
         keyValueStore.set(value, forKey: key)
     }
 }
+#endif
 
 
 

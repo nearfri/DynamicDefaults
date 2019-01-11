@@ -15,7 +15,6 @@ open class BasePreferences {
             guard let defaultValues = try encoder.encode(type.init()) as? [String: Any] else {
                 preconditionFailure("Expected to encode \(type) as dictionary, but it was not.")
             }
-            
             let storedValues = dataContainer.dictionaryRepresentation
             let mergedValues = defaultValues.merging(storedValues) { (_, stored) in stored }
             
