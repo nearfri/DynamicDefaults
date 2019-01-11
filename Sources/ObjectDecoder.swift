@@ -639,6 +639,26 @@ private protocol InitializableWithAny {
     init(value: Any, codingPath: [CodingKey]) throws
 }
 
+extension Bool: InitializableWithAny {
+    fileprivate init(value: Any, codingPath: [CodingKey]) throws {
+        let type = Bool.self
+        guard let boolean = value as? Bool else {
+            throw Error.typeMismatch(codingPath: codingPath, expectation: type, reality: value)
+        }
+        self = boolean
+    }
+}
+
+extension String: InitializableWithAny {
+    fileprivate init(value: Any, codingPath: [CodingKey]) throws {
+        let type = String.self
+        guard let string = value as? String else {
+            throw Error.typeMismatch(codingPath: codingPath, expectation: type, reality: value)
+        }
+        self = string
+    }
+}
+
 extension InitializableWithAny where Self: InitializableWithNumeric {
     fileprivate init(value: Any, codingPath: [CodingKey]) throws {
         let type = Self.self
@@ -717,200 +737,52 @@ extension InitializableWithAny where Self: InitializableWithNumeric {
     }
 }
 
-extension Int: InitializableWithAny {}
-extension Int8: InitializableWithAny {}
-extension Int16: InitializableWithAny {}
-extension Int32: InitializableWithAny {}
-extension Int64: InitializableWithAny {}
-extension UInt: InitializableWithAny {}
-extension UInt8: InitializableWithAny {}
-extension UInt16: InitializableWithAny {}
-extension UInt32: InitializableWithAny {}
-extension UInt64: InitializableWithAny {}
-extension Float: InitializableWithAny {}
-extension Double: InitializableWithAny {}
-
-extension Bool: InitializableWithAny {
-    fileprivate init(value: Any, codingPath: [CodingKey]) throws {
-        let type = Bool.self
-        guard let boolean = value as? Bool else {
-            throw Error.typeMismatch(codingPath: codingPath, expectation: type, reality: value)
-        }
-        self = boolean
-    }
-}
-
-extension String: InitializableWithAny {
-    fileprivate init(value: Any, codingPath: [CodingKey]) throws {
-        let type = String.self
-        guard let string = value as? String else {
-            throw Error.typeMismatch(codingPath: codingPath, expectation: type, reality: value)
-        }
-        self = string
-    }
-}
-
 // MARK: -
 
-// TODO: Xcode 10부터 init?<Source>(exactly: Source)가 지원된다. 이걸 바로 써도 되는지 확인해볼 것.
-// NaN 처리 때문에 안 될 것 같다. JSONDecoder를 참고하면 될 듯
-// https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/JSONEncoder.swift
 private protocol InitializableWithNumeric {
     init?<T>(precisely source: T) where T: BinaryInteger
     init?<T>(precisely source: T) where T: BinaryFloatingPoint
 }
 
+extension InitializableWithNumeric where Self: Numeric {
+    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
+        self.init(exactly: source)
+    }
+}
+
 extension InitializableWithNumeric where Self: BinaryInteger {
-    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
-        self.init(exactly: source)
-    }
-    
     fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
         self.init(exactly: source)
     }
 }
 
-extension Int: InitializableWithNumeric {}
-extension Int8: InitializableWithNumeric {}
-extension Int16: InitializableWithNumeric {}
-extension Int32: InitializableWithNumeric {}
-extension Int64: InitializableWithNumeric {}
-extension UInt: InitializableWithNumeric {}
-extension UInt8: InitializableWithNumeric {}
-extension UInt16: InitializableWithNumeric {}
-extension UInt32: InitializableWithNumeric {}
-extension UInt64: InitializableWithNumeric {}
-
-extension Float: InitializableWithNumeric {
-    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
-        // Generic 버전은 실제로는 구현이 없는 것 같다. 그래서 타입 별로 일일이 구현해야 한다.
-        // https://github.com/apple/swift/blob/master/stdlib/public/core/FloatingPointTypes.swift.gyb
-        // TODO: 2018.10.01에 수정된 거 같다. generic 버전이 잘 되는지 검증이 필요하다.
-        // https://github.com/apple/swift/commit/0707ca6dacdb40cfbfeb1bee532a5802cd973655
-        switch source {
-        case let value as Int:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int8:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int16:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int32:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int64:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt8:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt16:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt32:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt64:
-            guard let exactValue = Float(exactly: value) else { return nil }
-            self = exactValue
-        default:
-            preconditionFailure("\(type(of: source)) type is not supported.")
-        }
-    }
-    
+extension InitializableWithNumeric where Self: BinaryFloatingPoint {
     fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
-        // TODO: Xcode 10부터 generic으로 초기화하는게 지원되는 것 같다. 검증 후 적용 필요.
-        switch source {
-        case let value as Float:
-            self = value
-        case let value as Double:
-            if value.isNaN {
-                self = Float.nan
-            } else if let exactValue = Float(exactly: value) {
-                self = exactValue
-            } else {
-                return nil
-            }
-            #if os(macOS)
-        case let value as Float80:
-            if value.isNaN {
-                self = Float.nan
-            } else if let exactValue = Float(exactly: value) {
-                self = exactValue
-            } else {
-                return nil
-            }
-            #endif
-        default:
-            preconditionFailure("\(type(of: source)) type is not supported.")
+        if source.isNaN {
+            self = Self.nan
+        } else if let exactValue = Self(exactly: source) {
+            self = exactValue
+        } else {
+            return nil
         }
     }
 }
 
-extension Double: InitializableWithNumeric {
-    fileprivate init?<T>(precisely source: T) where T: BinaryInteger {
-        switch source {
-        case let value as Int:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int8:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int16:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int32:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as Int64:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt8:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt16:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt32:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        case let value as UInt64:
-            guard let exactValue = Double(exactly: value) else { return nil }
-            self = exactValue
-        default:
-            preconditionFailure("\(type(of: source)) type is not supported.")
-        }
-    }
-    
-    fileprivate init?<T>(precisely source: T) where T: BinaryFloatingPoint {
-        switch source {
-        case let value as Float:
-            self = Double(value)
-        case let value as Double:
-            self = value
-            #if os(macOS)
-        case let value as Float80:
-            if value.isNaN {
-                self = Double.nan
-            } else if let exactValue = Double(exactly: value) {
-                self = exactValue
-            } else {
-                return nil
-            }
-            #endif
-        default:
-            preconditionFailure("\(type(of: source)) type is not supported.")
-        }
-    }
-}
+extension Int: InitializableWithAny, InitializableWithNumeric {}
+extension Int8: InitializableWithAny, InitializableWithNumeric {}
+extension Int16: InitializableWithAny, InitializableWithNumeric {}
+extension Int32: InitializableWithAny, InitializableWithNumeric {}
+extension Int64: InitializableWithAny, InitializableWithNumeric {}
+extension UInt: InitializableWithAny, InitializableWithNumeric {}
+extension UInt8: InitializableWithAny, InitializableWithNumeric {}
+extension UInt16: InitializableWithAny, InitializableWithNumeric {}
+extension UInt32: InitializableWithAny, InitializableWithNumeric {}
+extension UInt64: InitializableWithAny, InitializableWithNumeric {}
+extension Float: InitializableWithAny, InitializableWithNumeric {}
+extension Double: InitializableWithAny, InitializableWithNumeric {}
+#if os(macOS)
+extension Float80: InitializableWithAny, InitializableWithNumeric {}
+#endif
 
 
 
