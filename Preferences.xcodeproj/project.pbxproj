@@ -16,6 +16,8 @@
 		082A60D021E6F5A700159245 /* BasePreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 082A60CF21E6F5A700159245 /* BasePreferencesTests.swift */; };
 		0855046921E71BB90027719E /* NilCodingStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0855046821E71BB90027719E /* NilCodingStrategy.swift */; };
 		0855046B21E747CE0027719E /* DataContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0855046A21E747CE0027719E /* DataContainer.swift */; };
+		7536063721FD9CAA00147AE9 /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7536063621FD9CA900147AE9 /* Channel.swift */; };
+		7536063921FD9CCE00147AE9 /* ObservablePreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7536063821FD9CCE00147AE9 /* ObservablePreferencesTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +45,8 @@
 		082A60D521E708A900159245 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		0855046821E71BB90027719E /* NilCodingStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NilCodingStrategy.swift; sourceTree = "<group>"; };
 		0855046A21E747CE0027719E /* DataContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataContainer.swift; sourceTree = "<group>"; };
+		7536063621FD9CA900147AE9 /* Channel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
+		7536063821FD9CCE00147AE9 /* ObservablePreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservablePreferencesTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +93,8 @@
 			children = (
 				082A60CB21E6F53800159245 /* ObjectCoderTests.swift */,
 				082A60CF21E6F5A700159245 /* BasePreferencesTests.swift */,
+				7536063821FD9CCE00147AE9 /* ObservablePreferencesTests.swift */,
+				7536063621FD9CA900147AE9 /* Channel.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -231,6 +237,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7536063721FD9CAA00147AE9 /* Channel.swift in Sources */,
 				0855046921E71BB90027719E /* NilCodingStrategy.swift in Sources */,
 				082A60C721E6F50100159245 /* ObjectEncoder.swift in Sources */,
 				082A60CA21E6F50800159245 /* BasePreferences.swift in Sources */,
@@ -245,6 +252,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				082A60CC21E6F53800159245 /* ObjectCoderTests.swift in Sources */,
+				7536063921FD9CCE00147AE9 /* ObservablePreferencesTests.swift in Sources */,
 				082A60D021E6F5A700159245 /* BasePreferencesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

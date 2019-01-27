@@ -82,6 +82,7 @@ class BasePreferencesTests: XCTestCase {
     }
     
     func test_instantiate_onNextLaunch_hasChangedValues() {
+        // Given
         let modifiedDate: Date = Date()
         
         sut.intNum = 7
@@ -96,8 +97,11 @@ class BasePreferencesTests: XCTestCase {
         sut.isItReal = true
         
         sut = nil
+        
+        // When
         setupPreferences()
         
+        // Then
         XCTAssertEqual(sut.intNum, 7)
         XCTAssertEqual(sut.str, "world")
         XCTAssertEqual(sut.optIntNum1, nil)
