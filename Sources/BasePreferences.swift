@@ -2,7 +2,7 @@
 import Foundation
 
 open class BasePreferences {
-    private var dataContainer: DataContainer = LocalDataContainer()
+    private lazy var dataContainer: DataContainer = LocalDataContainer()
     
     public required init() {}
     
