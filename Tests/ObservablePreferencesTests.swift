@@ -12,13 +12,18 @@ class ObservablePreferences: BasePreferences, Codable {
     private func store<T>(_ keyPath: KeyPath<ObservablePreferences, T>,
                           forKey key: String = #function) where T : Encodable {
         store(self[keyPath: keyPath], forKey: key)
-        channel(for: keyPath).broadcast(self)
+        channels[keyPath]?.broadcast(self)
     }
     
     func channel<T>(for keyPath: KeyPath<ObservablePreferences, T>
         ) -> Channel<ObservablePreferences> {
         
-        return channels.channel(for: keyPath)
+        if let result = channels[keyPath] {
+            return result
+        }
+        let result = Channel<ObservablePreferences>()
+        channels[keyPath] = result
+        return result
     }
     
     var num: Int = 3 { didSet { store(\.num) } }
@@ -38,15 +43,11 @@ extension ObservablePreferences {
         
         func encode(to encoder: Encoder) throws {}
         
-        func channel(for keyPath: PartialKeyPath<ObservablePreferences>
-            ) -> Channel<ObservablePreferences> {
+        subscript(keyPath: PartialKeyPath<ObservablePreferences>
+            ) -> Channel<ObservablePreferences>? {
             
-            if let result = storage[keyPath] {
-                return result
-            }
-            let result = Channel<ObservablePreferences>()
-            storage[keyPath] = result
-            return result
+            get { return storage[keyPath] }
+            set { storage[keyPath] = newValue }
         }
     }
 }
