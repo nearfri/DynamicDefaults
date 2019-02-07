@@ -42,6 +42,7 @@ class Preferences: BasePreferences, Codable {
 let pref = Preferences.default
 pref.intNum // 3
 pref.intNum += 1 // 4
+UserDefaults.standard.integer(forKey: "intNum") // 4
 ```
 
 ### If you want to observe changes

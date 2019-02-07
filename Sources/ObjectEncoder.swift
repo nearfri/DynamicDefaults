@@ -326,7 +326,7 @@ extension ObjectEncoder {
             completion(container.object)
         }
         
-        func encode(_ value: Bool) throws { container.append(value)}
+        func encode(_ value: Bool) throws { container.append(value) }
         func encode(_ value: Int) throws { container.append(value) }
         func encode(_ value: Int8) throws { container.append(value) }
         func encode(_ value: Int16) throws { container.append(value) }
