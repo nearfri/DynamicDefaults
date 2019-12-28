@@ -1,4 +1,3 @@
-
 import XCTest
 @testable import Preferences
 
@@ -34,7 +33,7 @@ class ObjectCoderTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line) where T: Codable, T: Equatable, U: Equatable {
         
-        var encodedValue: Any! = nil
+        let encodedValue: Any
         do {
             let encoder = ObjectEncoder()
             if let nilStrategy = nilEncodingStrategy {
@@ -43,6 +42,7 @@ class ObjectCoderTests: XCTestCase {
             encodedValue = try encoder.encode(value)
         } catch {
             XCTFail("Failed to encode \(T.self): \(error)", file: file, line: line)
+            return
         }
         
         if let encodedValue = encodedValue as? U {
@@ -145,7 +145,7 @@ class ObjectCoderTests: XCTestCase {
     }
     
     func testEncodingTopLevelData() {
-        let data = Data(bytes: [0xAB, 0xDE, 0xF3, 0x05])
+        let data = Data([0xAB, 0xDE, 0xF3, 0x05])
         testRoundTrip(of: data, expectedEncodedValue: data)
     }
     
@@ -282,12 +282,13 @@ class ObjectCoderTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line) where T: Codable, T: Equatable {
         
-        var encodedValue: Any! = nil
+        let encodedValue: Any
         do {
             let encoder = ObjectEncoder()
             encodedValue = try encoder.encode(value)
         } catch {
             XCTFail("Failed to encode \(T.self): \(error)", file: file, line: line)
+            return
         }
         
         do {
@@ -672,7 +673,7 @@ class ObjectCoderTests: XCTestCase {
         testRoundTrip(of: url as URL?, expectedEncodedValue: ["relative": "https://apple.com"])
         testRoundTrip(of: nil as URL?, expectedEncodedValue: nilSymbol)
         
-        let data = Data(bytes: [0xAB, 0xDE, 0xF3, 0x05])
+        let data = Data([0xAB, 0xDE, 0xF3, 0x05])
         testRoundTrip(of: data as Data?, expectedEncodedValue: data)
         testRoundTrip(of: nil as Data?, expectedEncodedValue: nilSymbol)
         
@@ -1205,6 +1206,3 @@ private func expectEqualPaths(_ lhs: [CodingKey], _ rhs: [CodingKey], _ prefix: 
             file: file, line: line)
     }
 }
-
-
-

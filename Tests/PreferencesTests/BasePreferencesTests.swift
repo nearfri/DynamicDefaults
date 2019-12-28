@@ -1,4 +1,3 @@
-
 import XCTest
 import CoreGraphics
 @testable import Preferences
@@ -114,6 +113,3 @@ class BasePreferencesTests: XCTestCase {
         XCTAssertEqual(sut.isItReal, true)
     }
 }
-
-
-

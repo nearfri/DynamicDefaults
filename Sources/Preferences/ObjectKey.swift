@@ -1,4 +1,3 @@
-
 import Foundation
 
 internal struct ObjectKey: CodingKey {
@@ -22,6 +21,3 @@ internal struct ObjectKey: CodingKey {
     
     public static let superKey = ObjectKey(stringValue: "super")!
 }
-
-
-

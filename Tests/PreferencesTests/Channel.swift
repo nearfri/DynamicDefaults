@@ -81,6 +81,3 @@ public class Subscriber {
         subscription = nil
     }
 }
-
-
-

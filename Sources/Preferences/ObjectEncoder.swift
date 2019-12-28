@@ -1,4 +1,3 @@
-
 import Foundation
 
 // ref.: https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/PlistEncoder.swift
@@ -431,6 +430,3 @@ extension ObjectEncoder {
         }
     }
 }
-
-
-

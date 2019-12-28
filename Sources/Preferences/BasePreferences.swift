@@ -1,4 +1,3 @@
-
 import Foundation
 
 open class BasePreferences {
@@ -48,6 +47,3 @@ open class BasePreferences {
         }
     }
 }
-
-
-

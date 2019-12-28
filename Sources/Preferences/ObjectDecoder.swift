@@ -1,4 +1,3 @@
-
 import Foundation
 
 // ref.: https://github.com/apple/swift/blob/master/stdlib/public/Darwin/Foundation/PlistEncoder.swift
@@ -783,6 +782,3 @@ extension Double: InitializableWithAny, InitializableWithNumeric {}
 #if os(macOS)
 extension Float80: InitializableWithAny, InitializableWithNumeric {}
 #endif
-
-
-

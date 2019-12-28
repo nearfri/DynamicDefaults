@@ -32,6 +32,3 @@ extension NilCodingStrategy {
     public static let `default`: NilCodingStrategy = .symbol(NilCodingStrategy.defaultNilSymbol)
     public static let defaultNilSymbol: String = "$null"
 }
-
-
-
