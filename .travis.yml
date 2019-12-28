@@ -1,5 +1,0 @@
-language: swift
-osx_image: xcode11.3
-xcode_scheme: Preferences
-xcode_destination: platform=macOS
-# xcode_destination: platform=iOS Simulator,OS=12.1,name=iPhone XS
