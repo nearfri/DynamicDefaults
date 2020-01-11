@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "ObjectCoder",
+        "repositoryURL": "https://github.com/nearfri/ObjectCoder.git",
+        "state": {
+          "branch": null,
+          "revision": "b4bd664f4cee6f1d687bf5c14db637fe99967c53",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,4 +1,5 @@
 import Foundation
+import ObjectCoder
 
 open class BasePreferences {
     private lazy var dataContainer: DataContainer = LocalDataContainer()
@@ -7,8 +8,7 @@ open class BasePreferences {
     
     public static func instantiate<T: BasePreferences>(
         _ type: T.Type, dataContainer: DataContainer = LocalDataContainer()
-        ) -> T where T: Codable {
-        
+    ) -> T where T: Codable {
         do {
             let encoder = ObjectEncoder()
             guard let defaultValues = try encoder.encode(type.init()) as? [String: Any] else {
