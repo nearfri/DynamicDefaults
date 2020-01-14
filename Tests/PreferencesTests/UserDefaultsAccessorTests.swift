@@ -2,55 +2,50 @@ import XCTest
 import CoreGraphics
 @testable import Preferences
 
-@dynamicMemberLookup
-private class Settings {
-    struct Model: Codable {
-        var intNum: Int = 3
-        var optIntNum1: Int? = 4
-        var optIntNum2: Int? = nil
-        
-        var str: String = "hello"
-        var optStr1: String? = "foo"
-        var optStr2: String? = nil
-        
-        var color: ColorType = .blue
-        
-        var doubleNum: Double = 5
-        
-        var rect: CGRect = CGRect(x: 1, y: 2, width: 3, height: 4)
-        
-        var colors: [ColorType] = [.blue, .black, .green]
-        
-        var creationDate: Date = Constant.creationDate
-        
-        var isItReal: Bool = false
-    }
+struct SettingsModel: Codable {
+    var intNum: Int = 3
+    var optIntNum1: Int? = 4
+    var optIntNum2: Int? = nil
     
-    private let defaultsAccessor: UserDefaultsAccessor<Model>
+    var str: String = "hello"
+    var optStr1: String? = "foo"
+    var optStr2: String? = nil
     
-    init() {
-        defaultsAccessor = UserDefaultsAccessor(
-            defaultValue: Model(),
+    var color: ColorType = .blue
+    
+    var doubleNum: Double = 5
+    
+    var rect: CGRect = CGRect(x: 1, y: 2, width: 3, height: 4)
+    
+    var colors: [ColorType] = [.blue, .black, .green]
+    
+    var creationDate: Date = Constant.creationDate
+    
+    var isItReal: Bool = false
+}
+
+typealias Settings = UserDefaultsAccessor<SettingsModel>
+
+extension Settings {
+    static func instantiate() -> Settings {
+        return Settings(
+            userDefaults: .standard,
+            defaultSubject: SettingsModel(),
             keysByKeyPath: [ // 컴파일러의 도움을 받을 수 있다면 좋을텐데...
-                \Model.intNum: "intNum",
-                \Model.optIntNum1: "optIntNum1",
-                \Model.optIntNum2: "optIntNum2",
-                \Model.str: "str",
-                \Model.optStr1: "optStr1",
-                \Model.optStr2: "optStr2",
-                \Model.color: "color",
-                \Model.doubleNum: "doubleNum",
-                \Model.rect: "rect",
-                \Model.colors: "colors",
-                \Model.creationDate: "creationDate",
-                \Model.isItReal: "isItReal",
+                \SettingsModel.intNum: "intNum",
+                \SettingsModel.optIntNum1: "optIntNum1",
+                \SettingsModel.optIntNum2: "optIntNum2",
+                \SettingsModel.str: "str",
+                \SettingsModel.optStr1: "optStr1",
+                \SettingsModel.optStr2: "optStr2",
+                \SettingsModel.color: "color",
+                \SettingsModel.doubleNum: "doubleNum",
+                \SettingsModel.rect: "rect",
+                \SettingsModel.colors: "colors",
+                \SettingsModel.creationDate: "creationDate",
+                \SettingsModel.isItReal: "isItReal",
             ]
         )
-    }
-    
-    subscript<T: Codable>(dynamicMember keyPath: KeyPath<Model, T>) -> T {
-        get { defaultsAccessor[dynamicMember: keyPath] }
-        set { defaultsAccessor[dynamicMember: keyPath] = newValue }
     }
 }
 
@@ -60,7 +55,7 @@ class UserDefaultsAccessorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         removeAllObjects(in: .standard)
-        sut = Settings()
+        sut = Settings.instantiate()
     }
     
     private func removeAllObjects(in userDefaults: UserDefaults) {
@@ -75,7 +70,7 @@ class UserDefaultsAccessorTests: XCTestCase {
     }
     
     func test_instantiate_onFirstLaunch_hasDefaultValues() {
-        let model = Settings.Model()
+        let model = SettingsModel()
         XCTAssertEqual(sut.intNum, model.intNum)
         XCTAssertEqual(sut.optIntNum1, model.optIntNum1)
         XCTAssertEqual(sut.optIntNum2, model.optIntNum2)
@@ -108,7 +103,7 @@ class UserDefaultsAccessorTests: XCTestCase {
         sut = nil
         
         // When
-        sut = Settings()
+        sut = Settings.instantiate()
         
         // Then
         XCTAssertEqual(sut.intNum, 7)

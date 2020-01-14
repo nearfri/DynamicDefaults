@@ -2,31 +2,38 @@ import Foundation
 import ObjectCoder
 
 @dynamicMemberLookup
-public struct UserDefaultsAccessor<Subject> {
-    public let userDefaults: UserDefaults
-    public let defaultValue: Subject
-    public let keysByKeyPath: [PartialKeyPath<Subject>: String]
+public class UserDefaultsAccessor<Subject> {
+    private let userDefaults: UserDefaults
+    private let defaultSubject: Subject
+    private let keysByKeyPath: [PartialKeyPath<Subject>: String]
     
     public init(userDefaults: UserDefaults = .standard,
-                defaultValue: Subject,
+                defaultSubject: Subject,
                 keysByKeyPath: [PartialKeyPath<Subject>: String]) {
         self.userDefaults = userDefaults
-        self.defaultValue = defaultValue
+        self.defaultSubject = defaultSubject
         self.keysByKeyPath = keysByKeyPath
+    }
+    
+    public func key<T: Codable>(for keyPath: KeyPath<Subject, T>) -> String {
+        guard let result = keysByKeyPath[keyPath] else {
+            preconditionFailure("No key associated with keyPath.")
+        }
+        return result
     }
     
     public subscript<T: Codable>(dynamicMember keyPath: KeyPath<Subject, T>) -> T {
         get {
             return value(for: keyPath)
         }
-        nonmutating set {
+        set {
             setValue(newValue, for: keyPath)
         }
     }
     
     private func value<T: Codable>(for keyPath: KeyPath<Subject, T>) -> T {
         guard let value = userDefaults.object(forKey: key(for: keyPath)) else {
-            return defaultValue[keyPath: keyPath]
+            return defaultSubject[keyPath: keyPath]
         }
         
         // nil은 String으로 저장되므로 제외해야 한다.
@@ -39,17 +46,8 @@ public struct UserDefaultsAccessor<Subject> {
         } catch {
             print("Failed to decode \(T.self). Underlying error: \(error)")
             userDefaults.removeObject(forKey: key(for: keyPath))
-            return defaultValue[keyPath: keyPath]
+            return defaultSubject[keyPath: keyPath]
         }
-    }
-    
-    private func key<T: Codable>(for keyPath: KeyPath<Subject, T>,
-                                 file: StaticString = #file,
-                                 line: UInt = #line) -> String {
-        guard let result = keysByKeyPath[keyPath] else {
-            preconditionFailure("No key associated with keyPath.")
-        }
-        return result
     }
     
     private func setValue<T: Codable>(_ value: T, for keyPath: KeyPath<Subject, T>) {
