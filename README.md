@@ -1,10 +1,13 @@
-# Preferences
+# DynamicDefaults
+[![SwiftPM](https://github.com/nearfri/ObjectCoder/workflows/SwiftPM/badge.svg)](https://github.com/nearfri/ObjectCoder/actions?query=workflow%3ASwiftPM)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
 A Swift library to use UserDefaults in a easy way.
 
 ## Usage
-
-### 1. Declare your `Preferences` with `Codable` value type properties
 ```swift
+import DynamicDefaults
+
 enum ColorType: String, Codable {
     case red
     case blue
@@ -13,55 +16,61 @@ enum ColorType: String, Codable {
     case white
 }
 
-class Preferences: BasePreferences, Codable {
-    static let `default`: Preferences = {
-        return BasePreferences.instantiate(Preferences.self)
-    }()
+// 1. Define preferences model conforming to `Codable`.
+struct PreferencesModel: Codable {
+    var intNum: Int = 3
+    var optIntNum: Int? = nil
     
-    var intNum: Int = 3 { didSet { store(intNum) } }
+    var str: String = "hello"
+    var optStr: String? = "world"
     
-    var optIntNum: Int? = nil { didSet { store(optIntNum) } }
+    var rect: CGRect = CGRect(x: 1, y: 2, width: 3, height: 4)
     
-    var str: String = "hello" { didSet { store(str) } }
+    var colors: [ColorType] = [.blue, .black, .green]
     
-    var color: ColorType = .blue { didSet { store(color) } }
-    
-    var rect: CGRect = CGRect(x: 1, y: 2, width: 3, height: 4) { didSet { store(rect) } }
-    
-    var colors: [ColorType] = [.blue, .black, .green] { didSet { store(colors) } }
-    
-    var creationDate: Date = Date() { didSet { store(creationDate) } }
-    
-    var isItReal: Bool = false { didSet { store(isItReal) } }
+    var creationDate: Date = Date(timeIntervalSinceReferenceDate: 0)
 }
 
-```
+// 2. Define preferences class that inherits `UserDefaultsAccessor`.  
+class Preferences: UserDefaultsAccessor<PreferencesModel> {
+    let shared: Preferences = .init()
+    
+    init() {
+        super.init(
+            userDefaults: .standard,
+            defaultSubject: PreferencesModel(),
+            keysByKeyPath: [
+                \PreferencesModel.intNum: "intNum",
+                \PreferencesModel.optIntNum: "optIntNum",
+                \PreferencesModel.str: "str",
+                \PreferencesModel.optStr: "optStr",
+                \PreferencesModel.rect: "rect",
+                \PreferencesModel.colors: "colors",
+                \PreferencesModel.creationDate: "creationDate",
+            ]
+        )
+    }
+}
 
-### 2. Create and use
-```swift
-let pref = Preferences.default
-pref.intNum // 3
-pref.intNum += 1 // 4
-UserDefaults.standard.integer(forKey: "intNum") // 4
-```
+// 3. Just use it.
+let preferences = Preferences.shared
 
-### If you want to observe changes
-See [this example](https://github.com/nearfri/Preferences/blob/master/Tests/ObservablePreferencesTests.swift).
+preferences.intNum = 5
+XCTAssertEqual(preferences.intNum, 5)
+
+preferences.rect.size = CGSize(width: 5, height: 6)
+XCTAssertEqual(preferences.rect.size, CGSize(width: 5, height: 6))
+```
 
 ## Install
 
-#### Carthage
-```
-github "nearfri/Preferences"
-```
-
 #### Swift Package Manager
 ```
-.package(url: "https://github.com/nearfri/Preferences", from: "1.0.0")
+.package(url: "https://github.com/nearfri/DynamicDefaults", from: "1.0.0")
 ```
 
 ## License
-Preferences is released under the MIT license. See [LICENSE](https://github.com/nearfri/Preferences/blob/master/LICENSE) for more information.
+Preferences is released under the MIT license. See [LICENSE](https://github.com/nearfri/DynamicDefaults/blob/master/LICENSE) for more information.
 
 
 

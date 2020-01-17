@@ -107,6 +107,7 @@ class UserDefaultsAccessorTests: XCTestCase {
         sut.color = .black
         sut.doubleNum = 9
         sut.rect = CGRect(x: 5, y: 6, width: 7, height: 8)
+        sut.rect.size.height += 2
         sut.colors = [.yellow, .white, .red, .blue]
         sut.creationDate = modifiedDate
         sut.isItReal = true
@@ -125,7 +126,7 @@ class UserDefaultsAccessorTests: XCTestCase {
         XCTAssertEqual(sut.optStr2, "bar")
         XCTAssertEqual(sut.color, .black)
         XCTAssertEqual(sut.doubleNum, 9)
-        XCTAssertEqual(sut.rect, CGRect(x: 5, y: 6, width: 7, height: 8))
+        XCTAssertEqual(sut.rect, CGRect(x: 5, y: 6, width: 7, height: 10))
         XCTAssertEqual(sut.colors, [.yellow, .white, .red, .blue])
         XCTAssertEqual(sut.creationDate, modifiedDate)
         XCTAssertEqual(sut.isItReal, true)
