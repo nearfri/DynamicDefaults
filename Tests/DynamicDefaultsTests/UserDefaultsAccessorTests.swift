@@ -2,6 +2,19 @@ import XCTest
 import CoreGraphics
 @testable import DynamicDefaults
 
+enum ColorType: String, Codable {
+    case red
+    case blue
+    case green
+    case black
+    case white
+    case yellow
+}
+
+enum Constant {
+    static let creationDate: Date = Date(timeIntervalSince1970: 1547109206)
+}
+
 struct SettingsModel: Codable {
     var intNum: Int = 3
     var optIntNum1: Int? = 4
