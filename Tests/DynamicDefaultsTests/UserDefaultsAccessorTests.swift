@@ -1,6 +1,6 @@
 import XCTest
 import CoreGraphics
-@testable import DynamicDefaults
+import DynamicDefaults
 
 enum ColorType: String, Codable {
     case red
@@ -15,7 +15,7 @@ enum Constant {
     static let creationDate: Date = Date(timeIntervalSince1970: 1547109206)
 }
 
-struct SettingsModel: Codable {
+struct PreferencesModel: Codable {
     var intNum: Int = 3
     var optIntNum1: Int? = 4
     var optIntNum2: Int? = nil
@@ -37,38 +37,36 @@ struct SettingsModel: Codable {
     var isItReal: Bool = false
 }
 
-typealias Settings = UserDefaultsAccessor<SettingsModel>
-
-extension Settings {
-    static func instantiate() -> Settings {
-        return Settings(
+class Preferences: UserDefaultsAccessor<PreferencesModel> {
+    init() {
+        super.init(
             userDefaults: .standard,
-            defaultSubject: SettingsModel(),
+            defaultSubject: PreferencesModel(),
             keysByKeyPath: [ // 컴파일러의 도움을 받을 수 있다면 좋을텐데...
-                \SettingsModel.intNum: "intNum",
-                \SettingsModel.optIntNum1: "optIntNum1",
-                \SettingsModel.optIntNum2: "optIntNum2",
-                \SettingsModel.str: "str",
-                \SettingsModel.optStr1: "optStr1",
-                \SettingsModel.optStr2: "optStr2",
-                \SettingsModel.color: "color",
-                \SettingsModel.doubleNum: "doubleNum",
-                \SettingsModel.rect: "rect",
-                \SettingsModel.colors: "colors",
-                \SettingsModel.creationDate: "creationDate",
-                \SettingsModel.isItReal: "isItReal",
+                \PreferencesModel.intNum: "intNum",
+                \PreferencesModel.optIntNum1: "optIntNum1",
+                \PreferencesModel.optIntNum2: "optIntNum2",
+                \PreferencesModel.str: "str",
+                \PreferencesModel.optStr1: "optStr1",
+                \PreferencesModel.optStr2: "optStr2",
+                \PreferencesModel.color: "color",
+                \PreferencesModel.doubleNum: "doubleNum",
+                \PreferencesModel.rect: "rect",
+                \PreferencesModel.colors: "colors",
+                \PreferencesModel.creationDate: "creationDate",
+                \PreferencesModel.isItReal: "isItReal",
             ]
         )
     }
 }
 
 class UserDefaultsAccessorTests: XCTestCase {
-    private var sut: Settings!
+    private var sut: Preferences!
     
     override func setUp() {
         super.setUp()
         removeAllObjects(in: .standard)
-        sut = Settings.instantiate()
+        sut = Preferences()
     }
     
     private func removeAllObjects(in userDefaults: UserDefaults) {
@@ -83,7 +81,7 @@ class UserDefaultsAccessorTests: XCTestCase {
     }
     
     func test_instantiate_onFirstLaunch_hasDefaultValues() {
-        let model = SettingsModel()
+        let model = PreferencesModel()
         XCTAssertEqual(sut.intNum, model.intNum)
         XCTAssertEqual(sut.optIntNum1, model.optIntNum1)
         XCTAssertEqual(sut.optIntNum2, model.optIntNum2)
@@ -116,7 +114,7 @@ class UserDefaultsAccessorTests: XCTestCase {
         sut = nil
         
         // When
-        sut = Settings.instantiate()
+        sut = Preferences()
         
         // Then
         XCTAssertEqual(sut.intNum, 7)

@@ -2,7 +2,7 @@ import Foundation
 import ObjectCoder
 
 @dynamicMemberLookup
-public class UserDefaultsAccessor<Subject> {
+open class UserDefaultsAccessor<Subject> {
     private let userDefaults: UserDefaults
     private let defaultSubject: Subject
     private let keysByKeyPath: [PartialKeyPath<Subject>: String]
