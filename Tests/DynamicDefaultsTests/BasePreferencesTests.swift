@@ -1,6 +1,6 @@
 import XCTest
 import CoreGraphics
-@testable import Preferences
+@testable import DynamicDefaults
 
 enum ColorType: String, Codable {
     case red

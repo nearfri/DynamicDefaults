@@ -1,6 +1,6 @@
 import XCTest
 import CoreGraphics
-@testable import Preferences
+@testable import DynamicDefaults
 
 struct SettingsModel: Codable {
     var intNum: Int = 3

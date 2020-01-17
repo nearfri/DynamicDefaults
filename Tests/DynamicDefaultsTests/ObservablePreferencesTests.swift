@@ -1,6 +1,6 @@
 import XCTest
 import CoreGraphics
-@testable import Preferences
+@testable import DynamicDefaults
 
 class ObservablePreferences: BasePreferences, Codable {
     static let `default`: ObservablePreferences = {
