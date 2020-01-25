@@ -1,5 +1,5 @@
 # DynamicDefaults
-[![SwiftPM](https://github.com/nearfri/ObjectCoder/workflows/SwiftPM/badge.svg)](https://github.com/nearfri/ObjectCoder/actions?query=workflow%3ASwiftPM)
+[![SwiftPM](https://github.com/nearfri/DynamicDefaults/workflows/SwiftPM/badge.svg)](https://github.com/nearfri/DynamicDefaults/actions?query=workflow%3ASwiftPM)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 A Swift library to use UserDefaults in a easy way.
