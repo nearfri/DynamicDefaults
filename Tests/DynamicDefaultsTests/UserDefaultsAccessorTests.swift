@@ -37,10 +37,10 @@ struct PreferencesModel: Codable {
     var isItReal: Bool = false
 }
 
-class Preferences: UserDefaultsAccessor<PreferencesModel> {
+class Preferences: KeyValueStoreAccessor<PreferencesModel> {
     init() {
         super.init(
-            userDefaults: .standard,
+            keyValueStore: UserDefaults.standard,
             defaultSubject: PreferencesModel(),
             keysByKeyPath: [ // 컴파일러의 도움을 받을 수 있다면 좋을텐데...
                 \PreferencesModel.intNum: "intNum",
@@ -60,7 +60,7 @@ class Preferences: UserDefaultsAccessor<PreferencesModel> {
     }
 }
 
-class UserDefaultsAccessorTests: XCTestCase {
+class KeyValueStoreAccessorTests: XCTestCase {
     private var sut: Preferences!
     
     override func setUp() {

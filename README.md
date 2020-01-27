@@ -31,13 +31,13 @@ struct PreferencesModel: Codable {
     var creationDate: Date = Date(timeIntervalSinceReferenceDate: 0)
 }
 
-// 2. Define preferences class that inherits `UserDefaultsAccessor`.  
-class Preferences: UserDefaultsAccessor<PreferencesModel> {
+// 2. Define preferences class that inherits `KeyValueStoreAccessor`.  
+class Preferences: KeyValueStoreAccessor<PreferencesModel> {
     let shared: Preferences = .init()
     
     init() {
         super.init(
-            userDefaults: .standard,
+            keyValueStore: UserDefaults.standard,
             defaultSubject: PreferencesModel(),
             keysByKeyPath: [
                 \PreferencesModel.intNum: "intNum",

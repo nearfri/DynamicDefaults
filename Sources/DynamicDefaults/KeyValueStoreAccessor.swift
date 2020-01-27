@@ -2,15 +2,15 @@ import Foundation
 import ObjectCoder
 
 @dynamicMemberLookup
-open class UserDefaultsAccessor<Subject> {
-    private let userDefaults: UserDefaults
+open class KeyValueStoreAccessor<Subject> {
+    private let keyValueStore: KeyValueStore
     private let defaultSubject: Subject
     private let keysByKeyPath: [PartialKeyPath<Subject>: String]
     
-    public init(userDefaults: UserDefaults = .standard,
+    public init(keyValueStore: KeyValueStore,
                 defaultSubject: Subject,
                 keysByKeyPath: [PartialKeyPath<Subject>: String]) {
-        self.userDefaults = userDefaults
+        self.keyValueStore = keyValueStore
         self.defaultSubject = defaultSubject
         self.keysByKeyPath = keysByKeyPath
     }
@@ -32,7 +32,7 @@ open class UserDefaultsAccessor<Subject> {
     }
     
     private func value<T: Codable>(for keyPath: KeyPath<Subject, T>) -> T {
-        guard let value = userDefaults.object(forKey: key(for: keyPath)) else {
+        guard let value = keyValueStore.object(forKey: key(for: keyPath)) else {
             return defaultSubject[keyPath: keyPath]
         }
         
@@ -45,7 +45,7 @@ open class UserDefaultsAccessor<Subject> {
             return try ObjectDecoder().decode(T.self, from: value)
         } catch {
             print("Failed to decode \(T.self). Underlying error: \(error)")
-            userDefaults.removeObject(forKey: key(for: keyPath))
+            keyValueStore.removeObject(forKey: key(for: keyPath))
             return defaultSubject[keyPath: keyPath]
         }
     }
@@ -63,6 +63,6 @@ open class UserDefaultsAccessor<Subject> {
             }
         }
         
-        userDefaults.set(encodedValue, forKey: key(for: keyPath))
+        keyValueStore.set(encodedValue, forKey: key(for: keyPath))
     }
 }
