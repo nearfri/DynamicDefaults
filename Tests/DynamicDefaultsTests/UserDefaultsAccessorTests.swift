@@ -40,7 +40,7 @@ struct PreferencesModel: Codable {
 class Preferences: KeyValueStoreAccessor<PreferencesModel> {
     init() {
         super.init(
-            keyValueStore: UserDefaults.standard,
+            keyValueStore: AppKeyValueStore(defaults: .standard),
             defaultSubject: PreferencesModel(),
             keysByKeyPath: [ // 컴파일러의 도움을 받을 수 있다면 좋을텐데...
                 \PreferencesModel.intNum: "intNum",

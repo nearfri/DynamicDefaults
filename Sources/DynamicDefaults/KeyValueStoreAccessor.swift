@@ -7,7 +7,7 @@ open class KeyValueStoreAccessor<Subject> {
     private let defaultSubject: Subject
     private let keysByKeyPath: [PartialKeyPath<Subject>: String]
     
-    public init(keyValueStore: KeyValueStore,
+    public init(keyValueStore: KeyValueStore = AppKeyValueStore(),
                 defaultSubject: Subject,
                 keysByKeyPath: [PartialKeyPath<Subject>: String]) {
         self.keyValueStore = keyValueStore
@@ -32,7 +32,7 @@ open class KeyValueStoreAccessor<Subject> {
     }
     
     private func value<T: Codable>(for keyPath: KeyPath<Subject, T>) -> T {
-        guard let value = keyValueStore.object(forKey: key(for: keyPath)) else {
+        guard let value = keyValueStore.value(forKey: key(for: keyPath)) else {
             return defaultSubject[keyPath: keyPath]
         }
         
@@ -45,7 +45,7 @@ open class KeyValueStoreAccessor<Subject> {
             return try ObjectDecoder().decode(T.self, from: value)
         } catch {
             print("Failed to decode \(T.self). Underlying error: \(error)")
-            keyValueStore.removeObject(forKey: key(for: keyPath))
+            keyValueStore.removeValue(forKey: key(for: keyPath))
             return defaultSubject[keyPath: keyPath]
         }
     }
@@ -63,6 +63,6 @@ open class KeyValueStoreAccessor<Subject> {
             }
         }
         
-        keyValueStore.set(encodedValue, forKey: key(for: keyPath))
+        keyValueStore.setValue(encodedValue, forKey: key(for: keyPath))
     }
 }
