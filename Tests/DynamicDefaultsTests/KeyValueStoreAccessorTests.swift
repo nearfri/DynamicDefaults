@@ -127,6 +127,56 @@ class KeyValueStoreAccessorTests: XCTestCase {
         XCTAssertEqual(sut.isItReal, true)
     }
     
+    func test_hasStoredValue_setValue_returnTrue() {
+        // Given
+        sut.color = .yellow
+        
+        // When
+        let hasStoredValue = sut.hasStoredValue(for: \.color)
+        
+        // Then
+        XCTAssert(hasStoredValue)
+    }
+    
+    func test_hasStoredValue_notSetValue_returnFalse() {
+        // Given
+        
+        // When
+        let hasStoredValue = sut.hasStoredValue(for: \.color)
+        
+        // Then
+        XCTAssertFalse(hasStoredValue)
+    }
+    
+    func test_removeStoredValue() {
+        // Given
+        sut.color = .yellow
+        
+        // When
+        sut.removeStoredValue(for: \.color)
+        let hasStoredValue = sut.hasStoredValue(for: \.color)
+        let color = sut.color
+        
+        // Then
+        XCTAssertFalse(hasStoredValue)
+        XCTAssertEqual(color, PreferencesModel().color)
+    }
+    
+    func test_removeAllStoredValues() {
+        // Given
+        sut.color = .yellow
+        sut.intNum = 7
+        
+        // When
+        sut.removeAllStoredValues()
+        let color = sut.color
+        let intNum = sut.intNum
+        
+        // Then
+        XCTAssertEqual(color, PreferencesModel().color)
+        XCTAssertEqual(intNum, PreferencesModel().intNum)
+    }
+    
     func test_observe_setValue_callHandler() {
         // Given
         sut.color = .black

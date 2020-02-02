@@ -66,6 +66,22 @@ open class KeyValueStoreAccessor<Subject> {
         keyValueStore.setValue(encodedValue, forKey: key(for: keyPath))
     }
     
+    public func synchronize() {
+        keyValueStore.synchronize()
+    }
+    
+    public func hasStoredValue<T: Codable>(for keyPath: KeyPath<Subject, T>) -> Bool {
+        return keyValueStore.value(forKey: key(for: keyPath)) != nil
+    }
+    
+    public func removeStoredValue<T: Codable>(for keyPath: KeyPath<Subject, T>) {
+        keyValueStore.removeValue(forKey: key(for: keyPath))
+    }
+    
+    public func removeAllStoredValues() {
+        keysByKeyPath.values.forEach(keyValueStore.removeValue(forKey:))
+    }
+    
     public func observe<T: Codable>(_ keyPath: KeyPath<Subject, T>,
                                     handler: @escaping (T) -> Void) -> KeyValueObservation {
         return keyValueStore.observeValue(forKey: key(for: keyPath)) { [weak self] in
