@@ -38,9 +38,9 @@ struct PreferencesModel: Codable {
 }
 
 class Preferences: KeyValueStoreAccessor<PreferencesModel> {
-    init() {
+    init(keyValueStore: KeyValueStoreMock) {
         super.init(
-            keyValueStore: AppKeyValueStore(defaults: .standard),
+            keyValueStore: keyValueStore,
             defaultSubject: PreferencesModel(),
             keysByKeyPath: [ // 컴파일러의 도움을 받을 수 있다면 좋을텐데...
                 \PreferencesModel.intNum: "intNum",
@@ -62,22 +62,17 @@ class Preferences: KeyValueStoreAccessor<PreferencesModel> {
 
 class KeyValueStoreAccessorTests: XCTestCase {
     private var sut: Preferences!
+    private var keyValueStore: KeyValueStoreMock!
     
     override func setUp() {
         super.setUp()
-        removeAllObjects(in: .standard)
-        sut = Preferences()
-    }
-    
-    private func removeAllObjects(in userDefaults: UserDefaults) {
-        for (key, _) in userDefaults.dictionaryRepresentation() {
-            userDefaults.removeObject(forKey: key)
-        }
+        
+        keyValueStore = KeyValueStoreMock()
+        sut = Preferences(keyValueStore: keyValueStore)
     }
     
     override func tearDown() {
         super.tearDown()
-        removeAllObjects(in: .standard)
     }
     
     func test_instantiate_onFirstLaunch_hasDefaultValues() {
@@ -115,7 +110,7 @@ class KeyValueStoreAccessorTests: XCTestCase {
         sut = nil
         
         // When
-        sut = Preferences()
+        sut = Preferences(keyValueStore: keyValueStore)
         
         // Then
         XCTAssertEqual(sut.intNum, 7)
@@ -130,5 +125,39 @@ class KeyValueStoreAccessorTests: XCTestCase {
         XCTAssertEqual(sut.colors, [.yellow, .white, .red, .blue])
         XCTAssertEqual(sut.creationDate, modifiedDate)
         XCTAssertEqual(sut.isItReal, true)
+    }
+    
+    func test_observe_setValue_callHandler() {
+        // Given
+        sut.color = .black
+        
+        // When
+        var observedColor: ColorType?
+        let observation = sut.observe(\.color) { color in
+            observedColor = color
+        }
+        
+        sut.color = .yellow
+        
+        // Then
+        XCTAssertEqual(observedColor, .yellow)
+        observation.invalidate()
+    }
+    
+    func test_observe_invalidate_notCallHandler() {
+        // Given
+        sut.color = .black
+        
+        // When
+        var observedColor: ColorType?
+        let observation = sut.observe(\.color) { color in
+            observedColor = color
+        }
+        observation.invalidate()
+        
+        sut.color = .yellow
+        
+        // Then
+        XCTAssertNil(observedColor)
     }
 }

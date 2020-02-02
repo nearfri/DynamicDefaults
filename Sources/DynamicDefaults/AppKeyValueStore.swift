@@ -11,7 +11,7 @@ public class AppKeyValueStore: KeyValueStore {
         return defaults.object(forKey: key)
     }
     
-    public func setValue(_ value: Any?, forKey key: String) {
+    public func setValue(_ value: Any, forKey key: String) {
         defaults.set(value, forKey: key)
     }
     
@@ -19,7 +19,48 @@ public class AppKeyValueStore: KeyValueStore {
         defaults.removeObject(forKey: key)
     }
     
+    @discardableResult
     public func synchronize() -> Bool {
         defaults.synchronize()
+    }
+    
+    public func observeValue(forKey key: String,
+                             handler: @escaping () -> Void) -> KeyValueObservation {
+        let observer = DefaultsObserver(defaults: defaults, key: key, handler: handler)
+        observer.startObserving()
+        return observer
+    }
+}
+
+private class DefaultsObserver: NSObject, KeyValueObservation {
+    private weak var defaults: UserDefaults?
+    private let key: String
+    private let handler: () -> Void
+    
+    init(defaults: UserDefaults, key: String, handler: @escaping () -> Void) {
+        self.defaults = defaults
+        self.key = key
+        self.handler = handler
+        super.init()
+    }
+    
+    deinit {
+        invalidate()
+    }
+    
+    func invalidate() {
+        defaults?.removeObserver(self, forKeyPath: key, context: nil)
+        defaults = nil
+    }
+    
+    func startObserving() {
+        defaults?.addObserver(self, forKeyPath: key, options: [], context: nil)
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey: Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        handler()
     }
 }
