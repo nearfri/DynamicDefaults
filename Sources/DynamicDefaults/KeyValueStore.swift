@@ -13,5 +13,6 @@ public protocol KeyValueStore: AnyObject {
     @discardableResult
     func synchronize() -> Bool
     
-    func observeValue(forKey key: String, handler: @escaping () -> Void) -> KeyValueObservation
+    func observeValue(forKey key: String,
+                      changeHandler: @escaping () -> Void) -> KeyValueObservation
 }

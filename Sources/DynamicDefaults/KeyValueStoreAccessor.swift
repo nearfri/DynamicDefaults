@@ -83,10 +83,10 @@ open class KeyValueStoreAccessor<Subject> {
     }
     
     public func observe<T: Codable>(_ keyPath: KeyPath<Subject, T>,
-                                    handler: @escaping (T) -> Void) -> KeyValueObservation {
+                                    changeHandler: @escaping (T) -> Void) -> KeyValueObservation {
         return keyValueStore.observeValue(forKey: key(for: keyPath)) { [weak self] in
             guard let self = self else { return }
-            handler(self.value(for: keyPath))
+            changeHandler(self.value(for: keyPath))
         }
     }
 }

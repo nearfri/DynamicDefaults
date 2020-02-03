@@ -31,13 +31,13 @@ public class SharedKeyValueStore: KeyValueStore {
     }
     
     public func observeValue(forKey key: String,
-                             handler: @escaping () -> Void) -> KeyValueObservation {
+                             changeHandler: @escaping () -> Void) -> KeyValueObservation {
         let internalObserver = StoreInternalObserver(registry: internalObserverRegistry,
                                                      key: key,
-                                                     handler: handler)
+                                                     handler: changeHandler)
         internalObserver.startObserving()
         
-        let externalObserver = StoreExternalObserver(store: store, key: key, handler: handler)
+        let externalObserver = StoreExternalObserver(store: store, key: key, handler: changeHandler)
         externalObserver.startObserving()
         
         return StoreObserverPair(internalObserver: internalObserver,

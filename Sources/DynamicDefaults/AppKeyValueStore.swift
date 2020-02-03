@@ -25,8 +25,8 @@ public class AppKeyValueStore: KeyValueStore {
     }
     
     public func observeValue(forKey key: String,
-                             handler: @escaping () -> Void) -> KeyValueObservation {
-        let observer = DefaultsObserver(defaults: defaults, key: key, handler: handler)
+                             changeHandler: @escaping () -> Void) -> KeyValueObservation {
+        let observer = DefaultsObserver(defaults: defaults, key: key, handler: changeHandler)
         observer.startObserving()
         return observer
     }

@@ -74,8 +74,9 @@ class KeyValueStoreMock: KeyValueStore {
         return true
     }
     
-    func observeValue(forKey key: String, handler: @escaping () -> Void) -> KeyValueObservation {
-        let observation = KeyValueObservationMock(store: self, key: key, handler: handler)
+    func observeValue(forKey key: String,
+                      changeHandler: @escaping () -> Void) -> KeyValueObservation {
+        let observation = KeyValueObservationMock(store: self, key: key, handler: changeHandler)
         observationsByKey[key, default: []].insert(observation)
         return ObservationWrapper(observation: observation)
     }
