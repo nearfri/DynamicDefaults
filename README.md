@@ -37,7 +37,6 @@ class Preferences: KeyValueStoreAccessor<PreferencesModel> {
     
     init() {
         super.init(
-            keyValueStore: UserDefaults.standard,
             defaultSubject: PreferencesModel(),
             keysByKeyPath: [
                 \PreferencesModel.intNum: "intNum",
@@ -57,6 +56,7 @@ let preferences = Preferences.shared
 
 preferences.intNum = 5
 XCTAssertEqual(preferences.intNum, 5)
+XCTAssertEqual(UserDefaults.standard.integer(forKey: "intNum"), 5)
 
 preferences.rect.size = CGSize(width: 5, height: 6)
 XCTAssertEqual(preferences.rect.size, CGSize(width: 5, height: 6))
