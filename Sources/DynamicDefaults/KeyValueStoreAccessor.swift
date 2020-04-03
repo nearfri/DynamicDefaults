@@ -1,16 +1,18 @@
 import Foundation
-import ObjectCoder
 
 @dynamicMemberLookup
 open class KeyValueStoreAccessor<Subject> {
     private let keyValueStore: KeyValueStore
+    private let valueCoder: ValueCoder
     private let defaultSubject: Subject
     private let keysByKeyPath: [PartialKeyPath<Subject>: String]
     
     public init(keyValueStore: KeyValueStore = AppKeyValueStore(),
+                valueCoder: ValueCoder = ObjectValueCoder(),
                 defaultSubject: Subject,
                 keysByKeyPath: [PartialKeyPath<Subject>: String]) {
         self.keyValueStore = keyValueStore
+        self.valueCoder = valueCoder
         self.defaultSubject = defaultSubject
         self.keysByKeyPath = keysByKeyPath
     }
@@ -32,17 +34,11 @@ open class KeyValueStoreAccessor<Subject> {
     }
     
     private func value<T: Codable>(for keyPath: KeyPath<Subject, T>) -> T {
-        guard let value = keyValueStore.value(forKey: key(for: keyPath)) else {
-            return defaultSubject[keyPath: keyPath]
-        }
-        
-        // nil은 String으로 저장되므로 제외해야 한다.
-        if let value = value as? T, !(value is String) {
-            return value
-        }
-        
         do {
-            return try ObjectDecoder().decode(T.self, from: value)
+            guard let value = keyValueStore.value(forKey: key(for: keyPath)) else {
+                return defaultSubject[keyPath: keyPath]
+            }
+            return try valueCoder.decode(T.self, from: value)
         } catch {
             print("Failed to decode \(T.self). Underlying error: \(error)")
             keyValueStore.removeValue(forKey: key(for: keyPath))
@@ -51,23 +47,17 @@ open class KeyValueStoreAccessor<Subject> {
     }
     
     private func setValue<T: Codable>(_ value: T, for keyPath: KeyPath<Subject, T>) {
-        let encodedValue: Any
-        switch value {
-        case is NSNumber, is String, is Data, is Date:
-            encodedValue = value
-        default:
-            do {
-                encodedValue = try ObjectEncoder().encode(value)
-            } catch {
-                preconditionFailure("Failed to encode \(T.self). Underlying error: \(error)")
-            }
+        do {
+            let encodedValue = try valueCoder.encode(value)
+            keyValueStore.setValue(encodedValue, forKey: key(for: keyPath))
+        } catch {
+            preconditionFailure("Failed to encode \(T.self). Underlying error: \(error)")
         }
-        
-        keyValueStore.setValue(encodedValue, forKey: key(for: keyPath))
     }
     
-    public func synchronize() {
-        keyValueStore.synchronize()
+    @discardableResult
+    public func synchronize() -> Bool {
+        return keyValueStore.synchronize()
     }
     
     public func hasStoredValue<T: Codable>(for keyPath: KeyPath<Subject, T>) -> Bool {

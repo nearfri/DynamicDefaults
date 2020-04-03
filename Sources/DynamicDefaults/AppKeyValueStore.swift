@@ -21,7 +21,7 @@ public class AppKeyValueStore: KeyValueStore {
     
     @discardableResult
     public func synchronize() -> Bool {
-        defaults.synchronize()
+        return defaults.synchronize()
     }
     
     public func observeValue(forKey key: String,
